@@ -2,26 +2,21 @@
 	Created by Yuhan Ping from HKU at 2019-06-04.
 	The project is about tooth completion.
 	Under development.
-	Lateset updated on 2019-06-04.
+	Lateset updated on 2019-06-06.
 */
 
 
 #include <iostream>
-#include <igl/readOFF.h>
+
 #include "Header/io.h"
-#include <igl/boundary_loop.h>
+#include "Header/boundary_construction.h"
+
 #include <igl/fit_plane.h>
 
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/ml.hpp>
 
 using namespace Eigen;
 using namespace std;
-using namespace cv;
-using namespace cv::ml;
+
 
 // ---------------pre-define parameters------------------
 MatrixXd V_plane, V_total, V1_boundary_L, V1_boundary_R, V2_boundary_L, V2_boundary_R;
@@ -44,8 +39,7 @@ int main(int argc, char *argv[])
 	load_mesh(first_mesh, V1, F1);
 
 	// identify the boundary
-	//igl::boundary_loop(F1, L1);
-	//cout << "boundary vertices idx " << L1 << endl;
+	calc_average_edge_length(V1, F1);
 
 	// create interactive straight line
 

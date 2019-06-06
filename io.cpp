@@ -1,4 +1,5 @@
 #include "Header/io.h"
+#include "Header/boundary_construction.h"
 
 Eigen::RowVector3d select_v1, select_v2;
 Eigen::MatrixXd V1;
@@ -56,13 +57,24 @@ bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier) {
 	return false;
 }
 
+bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier) {
+	if (key == ' ') {
+		// presee [space] to go further
+		// create line
+		viewer.data().add_edges(select_v1, select_v2, Eigen::RowVector3d(0, 0, 255));
+		return true;
+	}
+	return false;
+}
 
 bool viewer_display(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 	igl::opengl::glfw::Viewer viewer;
 	igl::opengl::glfw::imgui::ImGuiMenu menu;
 	viewer.plugins.push_back(&menu);
 	viewer.callback_mouse_down = &mouse_down;
+	viewer.callback_key_down = &key_down;
 	viewer.data().set_mesh(V, F);
+	viewer.data().set_colors(Color_per_vertex);
 	viewer.launch();
 
 	return true;

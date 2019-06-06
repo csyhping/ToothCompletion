@@ -3,12 +3,13 @@
 	Created by Yuhan Ping from HKU on 2019-06-04.
 	This is the header file for all io-related functions and the viewer settings.
 	Under development.
-	Latest updated on 2019-06-04.
+	Latest updated on 2019-06-06.
 */
 
 #ifndef IO_H
 #define IO_H
 
+#include <igl/readOFF.h>
 #include <igl/opengl/glfw/Viewer.h>
 #include <igl/opengl/glfw/imgui/ImGuiHelpers.h>
 #include <igl/opengl/glfw/imgui/ImGuiMenu.h>
@@ -20,6 +21,8 @@ extern Eigen::MatrixXi F1;
 extern int select_count; // records the number of vertex selected
 
 bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier); // mouse interaction to select vertex,Eigen::Vector3f &v1, Eigen::Vector3f &v2
+
+bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier); // key interaction to further process after select two vertex
 
 bool viewer_display(Eigen::MatrixXd &V, Eigen::MatrixXi &F); // viewer settings
 
