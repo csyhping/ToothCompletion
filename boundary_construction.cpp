@@ -10,8 +10,32 @@ double calc_average_edge_length(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 	return avg_length;
 }
 
-void create_vertex_on_line(Eigen::RowVector3d &select_v1, Eigen::RowVector3d &select_v2) {
+void create_vertex_on_line(Eigen::RowVector3d &select_v1, Eigen::RowVector3d &select_v2, Eigen::MatrixXd &New_v_on_line) {
 
+	// calculate line length
+	Eigen::MatrixXd length;
+	Eigen::MatrixXd v(2, 3);
+	Eigen::MatrixXi f = (Eigen::MatrixXi(1, 2) <<
+		0, 1).finished();
+	v.row(0) = select_v1;
+	v.row(1) = select_v2;
+	igl::edge_lengths(v, f, length);
+	std::cout << "length = " << length << std::endl;
+
+	// how many new vertices
+	int count = length(0, 0) / avg_length;
+	std::cout << "#new vertices to add " << count << std::endl;
+
+	// calc coordinates of these vertices
+	New_v_on_line.resize(count, 3); // resize according to #new_vertex
+
+	for (int i = 0; i < count; i++) {
+		New_v_on_line(i, 0) = select_v1(0, 0) + (-1)*(i + 1)*((select_v1(0, 0) - select_v2(0, 0)) / (count + 1));
+		New_v_on_line(i, 1) = select_v1(0, 1) + (-1)*(i + 1)*((select_v1(0, 1) - select_v2(0, 1)) / (count + 1));
+		New_v_on_line(i, 2) = select_v1(0, 2) + (-1)*(i + 1)*((select_v1(0, 2) - select_v2(0, 2)) / (count + 1));
+	}
+	std::cout << "new vertices coordinates " << New_v_on_line << std::endl;
+	
 }
 /*
 	// visualization test, color matrix initialization

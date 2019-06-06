@@ -2,7 +2,7 @@
 #include "Header/boundary_construction.h"
 
 Eigen::RowVector3d select_v1, select_v2;
-Eigen::MatrixXd V1;
+Eigen::MatrixXd V1, New_vertex_on_line;
 Eigen::MatrixXi F1;
 int select_count = 0; 
 
@@ -58,10 +58,17 @@ bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier) {
 }
 
 bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier) {
+	// [NOTE]: can add more functions here to go on process
 	if (key == ' ') {
 		// presee [space] to go further
 		// create line
 		viewer.data().add_edges(select_v1, select_v2, Eigen::RowVector3d(0, 0, 255));
+		
+		// get new vertex coordinates
+		create_vertex_on_line(select_v1, select_v2, New_vertex_on_line);
+
+		// visualize new vertex on line
+		viewer.data().add_points(New_vertex_on_line, Eigen::RowVector3d(0, 255, 255));
 		return true;
 	}
 	return false;
