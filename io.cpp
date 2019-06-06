@@ -1,26 +1,59 @@
 #include "Header/io.h"
 
-Eigen::Vector3f select_v1, select_v2;
+Eigen::RowVector3d select_v1, select_v2;
 Eigen::MatrixXd V1;
 Eigen::MatrixXi F1;
+int select_count = 0; 
+
+
+
 
 bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier) {
-	//, Eigen::Vector3f &v1, Eigen::Vector3f &v2
+	
 	// cast a ray in the view direction starting from the mouse position to get the real 3D position on the mesh
-	int fid;
-	Eigen::Vector3f vid;
+	int fid; // selected face id 
+	Eigen::Vector3f vid; // barycentric coordinate of selected face, vid = [a1, a2, a3] which represents the point p = a1*v1 + a2*v2 + a3*v3
 	double x = viewer.current_mouse_x;
 	double y = viewer.core.viewport(3) - viewer.current_mouse_y;
 
-	std::cout << "current mouse location-----[" << x << ", " << y << "]" << std::endl;
+	std::cout << "current mouse location-----[" << x << ", " << y << "]" << std::endl; 
 
 	if (igl::unproject_onto_mesh(Eigen::Vector2f(x, y), viewer.core.view, viewer.core.proj, viewer.core.viewport, V1, F1, fid, vid)) {
-		std::cout << "select face " << fid << std::endl;
-		std::cout << "select vertex " << vid << std::endl;
+		long c; // which vertex has the max value, a1/a2/a3? which means c = 0 or 1 or 2 of the select face
+		vid.maxCoeff(&c);
+		switch (select_count)
+		{
+		case 0:
+			// locate the nearest vertex as selected v1
+			select_v1 = V1.row(F1(fid, c));
+			std::cout << "the maxcoeff of vid " << c << std::endl;
+			std::cout << "[INFO]----First vertex selected: [" << select_v1 << "]" << std::endl;
+			
+			// visualize v1
+			viewer.data().add_points(select_v1,Eigen::RowVector3d(255,0,0));
+			select_count++;
+			break;
+		case 1:
+			// locate the nearest vertex as selected v2
+			select_v2 = V1.row(F1(fid, c));
+			std::cout << "the maxcoeff of vid " << c << std::endl;
+			std::cout << "[INFO]----Second vertex selected: [" << select_v2 << "]" << std::endl;
+
+			// visualize v2
+			viewer.data().add_points(select_v2, Eigen::RowVector3d(0, 255, 0));
+			select_count++;
+			break;
+		default:
+			std::cout << "[INFO]----Already selected two vertex" << std::endl;
+			break;
+
+		}
+		// only if the mouse is on the mesh, the mouse is able to select vertex
+		return true;
 	}
-
-
-	return true;
+	
+	// if the mouse is not on mesh, the mouse is able to rotate the mesh as normal
+	return false;
 }
 
 
