@@ -69,6 +69,10 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 		// visualize new vertex on line
 		viewer.data().add_points(New_vertex_on_line, Eigen::RowVector3d(0, 255, 255));
+
+		// get new hole boundary
+		get_hole_boundary(Color_per_vertex, V1, F1, select_v1, select_v2, New_vertex_on_line);
+
 		return true;
 	}
 	return false;

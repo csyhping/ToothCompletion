@@ -2,7 +2,7 @@
 	Created by Yuhan Ping from HKU at 2019-06-04.
 	The project is about tooth completion.
 	Under development.
-	Lateset updated on 2019-06-06.
+	Lateset updated on 2019-06-11.
 */
 
 
@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
 
 	// identify the boundary
 	calc_average_edge_length(V1, F1);
+
+	// visualize the boundary
 
 	// create interactive straight line
 

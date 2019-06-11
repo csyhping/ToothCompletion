@@ -1,7 +1,9 @@
 #include "Header/boundary_construction.h"
 
 Eigen::MatrixXd Color_per_vertex;
+Eigen::MatrixXd Hole_vertex;
 double avg_length; // store the average edge length
+int count; // how many new vertex
 
 double calc_average_edge_length(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 
@@ -23,7 +25,7 @@ void create_vertex_on_line(Eigen::RowVector3d &select_v1, Eigen::RowVector3d &se
 	std::cout << "length = " << length << std::endl;
 
 	// how many new vertices
-	int count = length(0, 0) / avg_length;
+	count = length(0, 0) / avg_length;
 	std::cout << "#new vertices to add " << count << std::endl;
 
 	// calc coordinates of these vertices
@@ -37,17 +39,49 @@ void create_vertex_on_line(Eigen::RowVector3d &select_v1, Eigen::RowVector3d &se
 	std::cout << "new vertices coordinates " << New_v_on_line << std::endl;
 	
 }
-/*
-	// visualization test, color matrix initialization
-	Color_per_vertex = Eigen::MatrixXd::Constant(V.rows(), 3, 1);
+
+void get_hole_boundary(Eigen::MatrixXd &color_per_v, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3d &select_v1, Eigen::RowVector3d &select_v2, Eigen::MatrixXd &New_v_on_line) {
+	
+	//// visualization test, color matrix initialization
+	//Color_per_vertex = Eigen::MatrixXd::Constant(V.rows(), 3, 1);
 
 	Eigen::RowVectorXd Boundary_loop; // store the ordered boundary loop of vertex idx, [v0, v1, v5, v6,...]
 	igl::boundary_loop(F, Boundary_loop);
 	std::cout << "boundary loop " << Boundary_loop << std::endl;
 	std::cout << "boundary row col " << Boundary_loop.rows() << " " << Boundary_loop.cols() << std::endl;
-	// modify color according for boundary vertex
+	//
+	//// modify color according for boundary vertex to visualize original boundary 
+	//for (int i = 0; i < Boundary_loop.cols(); i++) {
+	//	std::cout << "change color at " << Boundary_loop(0, i) << std::endl;
+	//	Color_per_vertex.row(Boundary_loop(0, i)) << 1, 0, 0;
+	//}
+
+	// construct new hole boundary 
+	int size = 1 + 1 + count;
+	int orignal_boundary_valid = 0;
+	std::cout << "size = " << size << std::endl;
+	double mid_x_of_select_v = 0.5*(select_v1(0, 0) + select_v2(0, 0));
+	std::cout << "mid x = " << mid_x_of_select_v << std::endl;
 	for (int i = 0; i < Boundary_loop.cols(); i++) {
-		std::cout << "change color at " << Boundary_loop(0, i) << std::endl;
-		Color_per_vertex.row(Boundary_loop(0, i)) << 1, 0, 0;
+		if (V(Boundary_loop(0, i), 0) <= mid_x_of_select_v) {
+			std::cout << "v [" <<Boundary_loop(0,i)<<"]  is closer to v1 "<< std::endl;
+			//// if close to select_v1
+			//if (V(Boundary_loop(0, i), 2) > select_v1(0, 2)) {
+			//	std::cout << "an original v is valid idx = " << Boundary_loop(i, 0) << std::endl;
+			//	std::cout << "the coordinates of v is [" << V(Boundary_loop(0, i)) << std::endl;
+
+			//	orignal_boundary_valid += 1;
+			//	// if z > z_select_v1, add to hole_vertex
+			//	Hole_vertex.resize(orignal_boundary_valid, 3);
+			//	Hole_vertex.row(orignal_boundary_valid - 1) = V.row(Boundary_loop(0, i));
+			//	std::cout << "hole vertex update " << Hole_vertex << std::endl;
+			//	getchar();
+			//}
+		}
+		else {
+			// if close to select v2
+			std::cout << "v [" << Boundary_loop(0, i) << "]  is closer to v2 " << std::endl;
+
+		}
 	}
-*/
+}

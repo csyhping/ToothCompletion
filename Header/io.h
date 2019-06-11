@@ -15,8 +15,9 @@
 #include <igl/opengl/glfw/imgui/ImGuiMenu.h>
 #include <igl/unproject_onto_mesh.h>
 
+
 extern Eigen::RowVector3d select_v1, select_v2; // select two vertex to create interactive straight line
-extern Eigen::MatrixXd V1;
+extern Eigen::MatrixXd V1, New_vertex_on_line; // new_v_on_line: create new v on the straight line
 extern Eigen::MatrixXi F1;
 extern int select_count; // records the number of vertex selected
 
