@@ -16,10 +16,12 @@
 #include <igl/unproject_onto_mesh.h>
 
 
-extern Eigen::RowVector3d select_v1, select_v2; // select two vertex to create interactive straight line
-extern Eigen::MatrixXd V1, New_vertex_on_line; // new_v_on_line: create new v on the straight line
+extern Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4; // select two vertex to create interactive straight line, v1&v2 for right hole, v3&v4 for left hole
+extern Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L; // new_v_on_line: create new v on the straight line
 extern Eigen::MatrixXi F1;
-extern int select_count; // records the number of vertex selected
+
+extern int count_L, count_R; // how many new vertex to create on line
+extern int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 
 bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier); // mouse interaction to select vertex,Eigen::Vector3f &v1, Eigen::Vector3f &v2
 
