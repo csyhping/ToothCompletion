@@ -3,7 +3,7 @@
 	Created by Yuhan Ping from HKU on 2019-06-04.
 	This is the header file for all io-related functions and the viewer settings.
 	Under development.
-	Latest updated on 2019-06-06.
+	Latest updated on 2019-06-13.
 */
 
 #ifndef IO_H

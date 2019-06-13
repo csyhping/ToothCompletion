@@ -3,7 +3,7 @@
 	Created by Yuhan Ping from HKU on 2019-06-06.
 	This is the header file for boundary construction.
 	Under development.
-	Latest updated on 2019-06-11.
+	Latest updated on 2019-06-13.
 */
 #ifndef BOUNDARY_CONSTRUCTION_H
 #define BOUNDARY_CONSTRUCTION_H
