@@ -3,6 +3,7 @@
 
 Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4;
 Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L;
+Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L;// hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
 Eigen::MatrixXi F1;
 int select_count_L = 0; 
 int select_count_R = 0;
@@ -123,8 +124,8 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		viewer.data().add_points(New_vertex_on_line_L, Eigen::RowVector3d(0, 255, 255)); // for left edge
 
 		// get new hole boundary
-		get_hole_boundary(V1, F1, select_v1, select_v2, New_vertex_on_line_R, idx_v1, idx_v2, count_R); // for right hole
-		//get_hole_boundary(V1, F1, select_v3, select_v4, New_vertex_on_line_L, idx_v3, idx_v4); // for right hole
+		get_hole_boundary(V1, F1, select_v1, select_v2, New_vertex_on_line_R, idx_v1, idx_v2, count_R,Hole_vertex_R); // for right hole
+		get_hole_boundary(V1, F1, select_v3, select_v4, New_vertex_on_line_L, idx_v3, idx_v4, count_L,Hole_vertex_L); // for right hole
 
 		viewer.data().set_colors(Color_per_vertex);
 
@@ -140,6 +141,8 @@ bool viewer_display(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 	viewer.callback_mouse_down = &mouse_down;
 	viewer.callback_key_down = &key_down;
 	viewer.data().set_mesh(V, F);
+	// visualization test, color matrix initialization
+	Color_per_vertex = Eigen::MatrixXd::Constant(V.rows(), 3, 1);
 	viewer.data().set_colors(Color_per_vertex);
 	viewer.launch();
 
@@ -149,5 +152,6 @@ bool viewer_display(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 bool load_mesh(std::string &mesh_dir, Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 	igl::readOFF(mesh_dir, V, F);
 	std::cout << "Load mesh successfully----[" << mesh_dir << "]" << std::endl;
+	get_pos_boundary(F);
 	return true;
 }
