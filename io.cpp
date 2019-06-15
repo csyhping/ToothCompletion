@@ -5,6 +5,7 @@
 Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4;
 Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L;
 Eigen::MatrixXd Projected_vertex_R, Projected_vertex_L; // projected vertex on 2D plane, #row = hole_vertex, #col = 2 (x,y)
+Eigen::MatrixXd Vertex_on_xy_R, Vertex_on_xy_L; // rotated vertex on the xy plane
 Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L;// hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
 Eigen::MatrixXi F1;
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
@@ -138,13 +139,17 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		project_hole_vertex_to_plane(Hole_vertex_R, NR, CR, Projected_vertex_R);
 		project_hole_vertex_to_plane(Hole_vertex_L, NL, CL, Projected_vertex_L);
 
-		// test the projected plane
+		// rotate the plane to a xy plane
+		rotate_to_xy_plane(NR, Projected_vertex_R, Vertex_on_xy_R);
+
+		// test the projected vertex
 		viewer.data().add_points(Projected_vertex_R, Eigen::RowVector3d(255, 255, 0));
 		viewer.data().add_points(Projected_vertex_L, Eigen::RowVector3d(255, 255, 0));
 
 		// test the plane 
 		viewer.data().add_points(CR, Eigen::RowVector3d(255, 255, 0));
 		viewer.data().add_points(CL, Eigen::RowVector3d(255, 255, 0));
+
 
 		Eigen::MatrixXd test_R(4, 3);
 		Eigen::MatrixXd test_L(4, 3);

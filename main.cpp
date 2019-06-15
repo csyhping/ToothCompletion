@@ -33,7 +33,7 @@ string second_mesh = "F:/StudyMaterials/HKU/RA/libigl-example-project/33.off";
 
 int main(int argc, char *argv[])
 {
-
+	project_hole_vertex_back();
 	// load the mesh, currently load one mesh for test, load two mesh in the future for dealing with neighbor intersection
 	load_mesh(first_mesh, V1, F1);
 
