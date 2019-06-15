@@ -15,7 +15,7 @@ void get_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector3d &N, Eigen::RowVe
 	fit a plane for hole vertices
 	[Return value] 1) a normal of the plane; 2) a point on the plane
 */
-void project_hole_vertex_to_plane();
+void project_hole_vertex_to_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector3d &N, Eigen::RowVector3d &C, Eigen::MatrixXd &ProjectTo_vertex);
 /*
 	project the hole vertex to the plane
 */
