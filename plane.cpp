@@ -19,7 +19,7 @@ void project_hole_vertex_to_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector
 	double y0 = C(0, 1);
 	double z0 = C(0, 2);
 	double d = -1 * (a*x0 + b * y0 + c * z0);
-	double value;
+	//double value;
 	for (int i = 0; i < Hole_vertex.rows(); i++) {
 		t = (a*Hole_vertex(i, 0) + b * Hole_vertex(i, 1) + c * Hole_vertex(i, 2) + d) / (a*a + b * b + c * c);
 		ProjectTo_vertex(i, 0) = Hole_vertex(i, 0) -a*t; // x' = x - a * t
@@ -37,30 +37,27 @@ void project_hole_vertex_to_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector
 }
 
 void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex, Eigen::MatrixXd &vertex_on_xy) {
+	Eigen::Vector3d n_plane, n_xy; // n_plane is the normal of the fitted plane, n_xy is the normal of the xy_plane
+	Eigen::MatrixXd Rotation_matrix(3, 3); // the rotation matrix
+	n_plane = N;
+	n_xy = Eigen::Vector3d(0, 0, 1);
 	
-	//Eigen::Vector3d N_xy = Eigen::RowVector3d(0, 0, 1); // normal of xy plane (0, 0, 1)
-	//// test rotation matrix
-	//Eigen::Vector3d N_xyy = Eigen::RowVector3d(1, 0, 0); // normal of xy plane (0, 0, 1)
-	//Eigen::MatrixXd rotM(3, 3);
-	//std::cout << "rotm rows cols " << rotM.rows() << " " << rotM.cols() << std::endl;
-	//// initialize the vertex_on_xy matrix
-	////vertex_on_xy.resize(ProjectTo_vertex.rows(), 2);
-	////std::cout << "vertex-on-xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
-	//igl::rotation_matrix_from_directions(N_xy, N_xyy);
+	// initialize the vertex_on_xy same as Projected_Vertex
+	vertex_on_xy.resize(ProjectTo_vertex.rows(),3);
+	// calculate the rotation matrix
+	Rotation_matrix = igl::rotation_matrix_from_directions(n_plane, n_xy);
+
+	std::cout << "project rows cols " << ProjectTo_vertex.rows() << " " << ProjectTo_vertex.cols() << std::endl;
+	std::cout << "v on xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
+
+	// calculate the rotated vertex coordinate based on the rotation matrix
+	vertex_on_xy = Rotation_matrix * ProjectTo_vertex.transpose();
+	std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl;
+
+
 
 }
 
 void project_hole_vertex_back() {
 
-	Eigen::Vector3d N_xy = Eigen::Vector3d(0, 0, 1); // normal of xy plane (0, 0, 1)
-	// test rotation matrix
-	Eigen::Vector3d N_xyy = Eigen::Vector3d(1, 0, 0); // normal of xy plane (0, 0, 1)
-	std::cout << "vector rows cols " << N_xy.rows() << " " << N_xy.cols() << std::endl;
-	Eigen::MatrixXd rotM(3, 3);
-	std::cout << "rotm rows cols " << rotM.rows() << " " << rotM.cols() << std::endl;
-	// initialize the vertex_on_xy matrix
-	//vertex_on_xy.resize(ProjectTo_vertex.rows(), 2);
-	//std::cout << "vertex-on-xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
-	rotM = igl::rotation_matrix_from_directions(N_xy, N_xyy);
-	std::cout << "rotm " << rotM << std::endl;
 }
