@@ -51,10 +51,13 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	std::cout << "v on xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
 
 	// calculate the rotated vertex coordinate based on the rotation matrix
+	// [NOTE] The matrix multiplication requires the transpose operation, 
+	// so the vertex_on_xy.transpose() is the final result which same format as normal V from a mesh
 	vertex_on_xy = Rotation_matrix * ProjectTo_vertex.transpose();
-	std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl;
+	std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl; 
+}
 
-
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy) {
 
 }
 

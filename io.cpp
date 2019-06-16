@@ -143,11 +143,11 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		rotate_to_xy_plane(NR, Projected_vertex_R, Vertex_on_xy_R);
 		rotate_to_xy_plane(NL, Projected_vertex_L, Vertex_on_xy_L);
 
-		// test the projected vertex
+		// visualize the projected vertex
 		viewer.data().add_points(Projected_vertex_R, Eigen::RowVector3d(255, 255, 0));
 		viewer.data().add_points(Projected_vertex_L, Eigen::RowVector3d(255, 255, 0));
 
-		// test the xy plane
+		// visualize the xy plane
 		Eigen::MatrixXd pxy(5, 3);
 		pxy <<
 			0, 0, 0,
@@ -161,13 +161,11 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		viewer.data().add_edges(pxy.row(0), pxy.row(3), Eigen::RowVector3d(255, 255, 0));
 		viewer.data().add_edges(pxy.row(0), pxy.row(4), Eigen::RowVector3d(255, 255, 0));
 
-
-
-		// test the rotated vertex
+		// visualize the rotated vertex
 		viewer.data().add_points(Vertex_on_xy_R.transpose(), Eigen::RowVector3d(0, 255, 255));
 		viewer.data().add_points(Vertex_on_xy_L.transpose(), Eigen::RowVector3d(0, 255, 255));
 
-		// test the plane 
+		// visualize the fitted plane 
 		viewer.data().add_points(CR, Eigen::RowVector3d(255, 255, 0));
 		viewer.data().add_points(CL, Eigen::RowVector3d(255, 255, 0));
 
