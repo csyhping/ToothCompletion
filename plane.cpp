@@ -60,11 +60,10 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 }
 
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f) {
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc) {
 
 	Eigen::MatrixXd vertex_xy_coordinates;
 	Eigen::MatrixXd t_vertex_on_xy;
-	Eigen::MatrixXi delaunay_F;
 
 	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
 	t_vertex_on_xy = vertex_on_xy.transpose();
@@ -76,22 +75,28 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 
 	std::cout << "v xy coordinate " << vertex_xy_coordinates << std::endl;
 
-	// perform Delaunay Triangulation
+	// perform Constrained Delaunay Triangulation
+	// define orient2D and incircle functor for DT
 	const auto &orient2d_functor = [](const double *pa, const double *pb, const double *pc) {
 		return orient2D(pa, pb, pc);
 	};
 	const auto &incircle_functor = [](const double *pa, const double *pb, const double *pc, const double *pd) {
 		return incircle(pa, pb, pc, pd);
 	};
-	igl::delaunay_triangulation(vertex_xy_coordinates, orient2d_functor, incircle_functor, delaunay_F); 
-	// [NOTE!!!] There seems a bug in igl::lexicographic_triangulation.cpp line 95 to line 108, I've commit on it
-	std::cout << "delaunay F " << delaunay_F << std::endl;
 
-	// test for visualization
+	// get basic DT
+	igl::delaunay_triangulation(vertex_xy_coordinates, orient2d_functor, incircle_functor, cdt_f); 
+	// [NOTE!!!] There seems a bug in igl::lexicographic_triangulation.cpp line 95 to line 108, I've commit on it
+
+	// there are some invalid faces in basic DT which is "out of" the convex hull of the polygon formed by xy coordinates
+	// Step 1: calculate the barycenter of each face 
+	bc.resize(cdt_f.rows(), 3);
+
+	// [NOTE] igl::barycenter requires the V be a 3D matrix (x,y,z), add col(2)---z back
 	vertex_xy_coordinates.conservativeResize(t_vertex_on_xy.rows(), 3);
 	vertex_xy_coordinates.col(2) = t_vertex_on_xy.col(2);
-	std::cout << "v xy coordinate" << vertex_xy_coordinates << std::endl;
-	cdt_f = delaunay_F;
+
+	igl::barycenter(vertex_xy_coordinates, cdt_f, bc);
 
 }
 

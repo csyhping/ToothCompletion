@@ -10,6 +10,7 @@
 #include <igl/fit_plane.h>
 #include <igl/rotation_matrix_from_directions.h>
 #include <igl/delaunay_triangulation.h>
+#include <igl/barycenter.h>
 
 
 
@@ -31,7 +32,7 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	[Return value] vertex on the xy plane
 */
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f);
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc);
 /*
 	Constrained Delauney Triangulation on the xy plane 
 	[Return value] triangulated vertex and face

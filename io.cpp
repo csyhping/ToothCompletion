@@ -145,12 +145,10 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		rotate_to_xy_plane(NL, Projected_vertex_L, Vertex_on_xy_L);
 
 		// Constrained Delaunay Triangulation
-		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F);
+		Eigen::MatrixXd bc;
+		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F,bc);
 
-		// visualize the delaunay result
-		viewer.data().clear();
-		viewer.data().set_mesh(Vertex_on_xy_R.transpose(), CDT_F);
-		viewer.core.align_camera_center(Vertex_on_xy_R.transpose());
+
 
 
 		// visualize the projected vertex
@@ -174,6 +172,14 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		// visualize the rotated vertex
 		viewer.data().add_points(Vertex_on_xy_R.transpose(), Eigen::RowVector3d(0, 255, 255));
 		viewer.data().add_points(Vertex_on_xy_L.transpose(), Eigen::RowVector3d(0, 255, 255));
+
+		// visualize the delaunay result
+		viewer.data().clear();
+		viewer.data().set_mesh(Vertex_on_xy_R.transpose(), CDT_F);
+		viewer.core.align_camera_center(Vertex_on_xy_R.transpose());
+
+		// visualize barycenter
+		viewer.data().add_points(bc, Eigen::RowVector3d(255, 0, 0));
 
 		// visualize the fitted plane 
 		viewer.data().add_points(CR, Eigen::RowVector3d(255, 255, 0));
