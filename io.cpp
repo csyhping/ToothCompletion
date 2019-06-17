@@ -8,6 +8,7 @@ Eigen::MatrixXd Projected_vertex_R, Projected_vertex_L; // projected vertex on 2
 Eigen::MatrixXd Vertex_on_xy_R, Vertex_on_xy_L; // rotated vertex on the xy plane
 Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L;// hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
 Eigen::MatrixXi F1;
+Eigen::MatrixXi CDT_F; // the faces after CDT on the xy plane
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
 int select_count_L = 0; 
 int select_count_R = 0;
@@ -142,6 +143,15 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		// rotate the plane to a xy plane
 		rotate_to_xy_plane(NR, Projected_vertex_R, Vertex_on_xy_R);
 		rotate_to_xy_plane(NL, Projected_vertex_L, Vertex_on_xy_L);
+
+		// Constrained Delaunay Triangulation
+		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F);
+
+		// visualize the delaunay result
+		viewer.data().clear();
+		viewer.data().set_mesh(Vertex_on_xy_R.transpose(), CDT_F);
+		viewer.core.align_camera_center(Vertex_on_xy_R.transpose());
+
 
 		// visualize the projected vertex
 		viewer.data().add_points(Projected_vertex_R, Eigen::RowVector3d(255, 255, 0));

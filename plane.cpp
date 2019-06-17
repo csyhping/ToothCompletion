@@ -55,9 +55,43 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	// so the vertex_on_xy.transpose() is the final result which same format as normal V from a mesh
 	vertex_on_xy = Rotation_matrix * ProjectTo_vertex.transpose();
 	std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl; 
+	// [NOTE] due to the calc error, the z value may not be exactlly 0 but z will be a constant 
+	// which means the rotated vertices are on a plane parallel with xy plane
 }
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy) {
+
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f) {
+
+	Eigen::MatrixXd vertex_xy_coordinates;
+	Eigen::MatrixXd t_vertex_on_xy;
+	Eigen::MatrixXi delaunay_F;
+
+	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
+	t_vertex_on_xy = vertex_on_xy.transpose();
+	vertex_xy_coordinates.resize(t_vertex_on_xy.rows(), 2);
+
+	// slice only col(0)---x and col(1)-----y of vertex_on_xy
+	vertex_xy_coordinates.col(0) = t_vertex_on_xy.col(0);
+	vertex_xy_coordinates.col(1) = t_vertex_on_xy.col(1);
+
+	std::cout << "v xy coordinate " << vertex_xy_coordinates << std::endl;
+
+	// perform Delaunay Triangulation
+	const auto &orient2d_functor = [](const double *pa, const double *pb, const double *pc) {
+		return orient2D(pa, pb, pc);
+	};
+	const auto &incircle_functor = [](const double *pa, const double *pb, const double *pc, const double *pd) {
+		return incircle(pa, pb, pc, pd);
+	};
+	igl::delaunay_triangulation(vertex_xy_coordinates, orient2d_functor, incircle_functor, delaunay_F); 
+	// [NOTE!!!] There seems a bug in igl::lexicographic_triangulation.cpp line 95 to line 108, I've commit on it
+	std::cout << "delaunay F " << delaunay_F << std::endl;
+
+	// test for visualization
+	vertex_xy_coordinates.conservativeResize(t_vertex_on_xy.rows(), 3);
+	vertex_xy_coordinates.col(2) = t_vertex_on_xy.col(2);
+	std::cout << "v xy coordinate" << vertex_xy_coordinates << std::endl;
+	cdt_f = delaunay_F;
 
 }
 
