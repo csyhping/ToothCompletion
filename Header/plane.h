@@ -12,6 +12,7 @@
 #include <igl/delaunay_triangulation.h>
 #include <igl/barycenter.h>
 #include <igl/point_in_poly.h>
+#include <igl/false_barycentric_subdivision.h>
 
 
 
@@ -35,7 +36,7 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	[Return value] vertex on the xy plane
 */
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f);
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f,Eigen::MatrixXd &bc);
 /*
 	Constrained Delauney Triangulation on the xy plane 
 	[Return value] triangulated vertex and face
@@ -121,6 +122,17 @@ bool is_point_in_poly(Eigen::MatrixXd &poly,double &x_bc, double &y_bc);
 /*
 	check if the barycenter is inside the Polygon by V (2D)
 	[Return Value] True---inside, false---outside
+*/
+
+void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull, Eigen::MatrixXd &vertex_all);
+/*
+	extract valid delaunay faces
+	[Return value] valid delaunay faces
+*/
+void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f);
+/*
+	perform refinment on basic Delaunay result 
+	[Return Value] the final delaunay faces which follow specific constraints
 */
 void project_hole_vertex_back();
 

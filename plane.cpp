@@ -2,6 +2,9 @@
 // test, to be deleted
 #include "Header/io.h"
 
+Eigen::MatrixXd vertex_xy_coordinates;
+Eigen::MatrixXd t_vertex_on_xy;
+//Eigen::MatrixXd bc;
 
 void get_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector3d &N, Eigen::RowVector3d &C) {
 
@@ -62,11 +65,7 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 }
 
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f) {
-
-	Eigen::MatrixXd vertex_xy_coordinates;
-	Eigen::MatrixXd t_vertex_on_xy;
-	Eigen::MatrixXd bc;
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc) {
 
 	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
 	t_vertex_on_xy = vertex_on_xy.transpose();
@@ -92,59 +91,20 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	// [NOTE!!!] There seems a bug in igl::lexicographic_triangulation.cpp line 95 to line 108, I've commit on it
 
 	// there are some invalid faces in basic DT which is "out of" the convex hull of the polygon formed by xy coordinates
-	// Step 1: calculate the barycenter of each face 
-	bc.resize(cdt_f.rows(), 3);
 
 	// [NOTE] igl::barycenter requires the V be a 3D matrix (x,y,z), add col(2)---z back
 	vertex_xy_coordinates.conservativeResize(t_vertex_on_xy.rows(), 3);
 	vertex_xy_coordinates.col(2) = t_vertex_on_xy.col(2);
-
-	igl::barycenter(vertex_xy_coordinates, cdt_f, bc);
 	
-	std::cout << "# cdt_F " << cdt_f.rows() << std::endl;
-	std::cout << "# bc " << bc.rows() << std::endl;
-	std::cout << "# v of poly " << vertex_xy_coordinates.rows() << std::endl;
+	// extract valid delaunay result 
+	extract_valid_cdt_f(cdt_f, bc, vertex_xy_coordinates,vertex_xy_coordinates);
 
-	// check if the bc is in the polygon(2D) formed by V
-	Eigen::MatrixXd poly_v_2d;
-	Eigen::RowVectorXi pos_valid_F; // mark which F is valid
-	Eigen::MatrixXi valid_cdt_F; // remove those faces which barycenter is out of the poly area
-	int valid_f_count = 0; // how many valid faces
-	poly_v_2d.resize(vertex_xy_coordinates.rows(), 2); // 2D poly
-	poly_v_2d.col(0) = vertex_xy_coordinates.col(0);
-	poly_v_2d.col(1) = vertex_xy_coordinates.col(1);
-
-	//color_bc.resize(bc.rows(), 3);
-	//color_bc.setConstant(1);
-
-	pos_valid_F.resize(cdt_f.rows());
-	pos_valid_F.setZero(); // initialize as 0, if 1 means valid face
-
-	for (int i = 0; i < bc.rows(); i++) {
-		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))) {
-			// if the bc is inside the Poly, keep the face
-			std::cout << "#bc " << i << " is inside" << std::endl;
-			valid_f_count += 1;
-			pos_valid_F(0, i) = 1;
-			// visualize the valid barycenter
-			// color_bc.row(i) << 1, 0, 0;
-		}
+	// refinement for the basic delaunay result
+	// calculate the average edge length of the poly boundary
+	double avg_edge_len;
+	for (int i = 0; i < vertex_xy_coordinates.rows(); i++) {
+		// TODO
 	}
-
-	// resize according to the valid face count
-	valid_cdt_F.resize(valid_f_count, 3);
-
-	int j = 0; // mark the pos in valid_cdt_f
-	// extract valid face
-	for (int i = 0; i < cdt_f.rows(); i++) {
-		if (pos_valid_F(0, i) == 1) {
-			valid_cdt_F.row(j) = cdt_f.row(i);
-			j += 1;
-		}
-	}
-	cdt_f.resize(valid_f_count, 3);
-	cdt_f = valid_cdt_F;
-
 }
 
 bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
@@ -176,6 +136,59 @@ bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
 	return (crossing % 2 != 0);
 }
 
+void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull,Eigen::MatrixXd &vertex_all) {
+	
+	//calculate the barycenter of each face
+	bc.resize(cdt_f.rows(), 3);
+
+	igl::barycenter(vertex_all, cdt_f, bc);
+
+	// check if the bc is in the polygon(2D) formed by V, if the bc is outside it means the corresponding face should be deleted
+	Eigen::MatrixXd poly_v_2d;
+	Eigen::RowVectorXi pos_valid_F; // mark which F is valid
+	Eigen::MatrixXi valid_cdt_F; // remove those faces which barycenter is out of the poly area
+	int valid_f_count = 0; // how many valid faces
+	poly_v_2d.resize(vertex_convex_hull.rows(), 2); // 2D poly
+	poly_v_2d.col(0) = vertex_convex_hull.col(0);
+	poly_v_2d.col(1) = vertex_convex_hull.col(1);
+
+	color_bc.resize(bc.rows(), 3);
+	color_bc.setConstant(1);
+
+	pos_valid_F.resize(cdt_f.rows());
+	pos_valid_F.setZero(); // initialize as 0, if 1 means valid face
+
+	for (int i = 0; i < bc.rows(); i++) {
+		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))) {
+			// if the bc is inside the Poly, keep the face
+			std::cout << "#bc " << i << " is inside" << std::endl;
+			valid_f_count += 1;
+			pos_valid_F(0, i) = 1;
+			// visualize the valid barycenter
+			color_bc.row(i) << 1, 0, 0;
+		}
+	}
+	std::cout << "valid pos " << pos_valid_F << std::endl;
+	// resize according to the valid face count
+	valid_cdt_F.resize(valid_f_count, 3);
+	std::cout << "#valid faces " << valid_f_count << std::endl;
+
+	int j = 0; // mark the pos in valid_cdt_f
+	// extract valid face
+	for (int i = 0; i < cdt_f.rows(); i++) {
+		if (pos_valid_F(0, i) == 1) {
+			std::cout << "keep #f " << i << std::endl;
+			valid_cdt_F.row(j) = cdt_f.row(i);
+			j += 1;
+		}
+	}
+	cdt_f.resize(valid_f_count, 3);
+	cdt_f = valid_cdt_F;
+}
+
+void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f) {
+
+}
 void project_hole_vertex_back() {
 
 }
