@@ -11,6 +11,9 @@
 #include <igl/rotation_matrix_from_directions.h>
 #include <igl/delaunay_triangulation.h>
 #include <igl/barycenter.h>
+#include <igl/point_in_poly.h>
+
+
 
 
 
@@ -114,7 +117,11 @@ int incircle(const T &pa, const T &pb, const T &pc,const T &pd) {
 	return 0;
 }
 
-
+bool is_point_in_poly(Eigen::MatrixXd &poly,double &x_bc, double &y_bc);
+/*
+	check if the barycenter is inside the Polygon by V (2D)
+	[Return Value] True---inside, false---outside
+*/
 void project_hole_vertex_back();
 
 #endif // !PLANE_H

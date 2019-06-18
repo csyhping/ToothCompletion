@@ -10,6 +10,9 @@ Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L;// hole_boundary vertices, includin
 Eigen::MatrixXi F1;
 Eigen::MatrixXi CDT_F; // the faces after CDT on the xy plane
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
+
+// test, to be deleted
+Eigen::MatrixXd color_bc;
 int select_count_L = 0; 
 int select_count_R = 0;
 int count_L = 0;
@@ -149,7 +152,10 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F,bc);
 
 
-
+		// visualize the delaunay result
+		viewer.data().clear();
+		viewer.data().set_mesh(Vertex_on_xy_R.transpose(), CDT_F);
+		viewer.core.align_camera_center(Vertex_on_xy_R.transpose());
 
 		// visualize the projected vertex
 		viewer.data().add_points(Projected_vertex_R, Eigen::RowVector3d(255, 255, 0));
@@ -173,13 +179,11 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		viewer.data().add_points(Vertex_on_xy_R.transpose(), Eigen::RowVector3d(0, 255, 255));
 		viewer.data().add_points(Vertex_on_xy_L.transpose(), Eigen::RowVector3d(0, 255, 255));
 
-		// visualize the delaunay result
-		viewer.data().clear();
-		viewer.data().set_mesh(Vertex_on_xy_R.transpose(), CDT_F);
-		viewer.core.align_camera_center(Vertex_on_xy_R.transpose());
+
 
 		// visualize barycenter
-		viewer.data().add_points(bc, Eigen::RowVector3d(255, 0, 0));
+		viewer.data().add_points(bc, color_bc);
+
 
 		// visualize the fitted plane 
 		viewer.data().add_points(CR, Eigen::RowVector3d(255, 255, 0));

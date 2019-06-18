@@ -20,6 +20,9 @@ extern Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4; // select 
 extern Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L; // new_v_on_line: create new v on the straight line
 extern Eigen::MatrixXi F1;
 
+// test for visualization, will be deteled finally
+extern Eigen::MatrixXd color_bc;
+
 extern int count_L, count_R; // how many new vertex to create on line
 extern int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 

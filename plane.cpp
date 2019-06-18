@@ -1,4 +1,6 @@
 #include "Header/plane.h"
+// test, to be deleted
+#include "Header/io.h"
 
 
 void get_plane(Eigen::MatrixXd &Hole_vertex, Eigen::RowVector3d &N, Eigen::RowVector3d &C) {
@@ -97,7 +99,57 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	vertex_xy_coordinates.col(2) = t_vertex_on_xy.col(2);
 
 	igl::barycenter(vertex_xy_coordinates, cdt_f, bc);
+	
+	std::cout << "# cdt_F " << cdt_f.rows() << std::endl;
+	std::cout << "# bc " << bc.rows() << std::endl;
+	std::cout << "# v of poly " << vertex_xy_coordinates.rows() << std::endl;
 
+	// check if the bc is in the polygon(2D) formed by V
+	Eigen::MatrixXd poly_v_2d;
+	poly_v_2d.resize(vertex_xy_coordinates.rows(), 2); // 2D poly
+	poly_v_2d.col(0) = vertex_xy_coordinates.col(0);
+	poly_v_2d.col(1) = vertex_xy_coordinates.col(1);
+
+	color_bc.resize(bc.rows(), 3);
+	color_bc.setConstant(1);
+
+	for (int i = 0; i < bc.rows(); i++) {
+		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))) {
+			// if the bc is inside the Poly
+			std::cout << "#bc " << i << " is inside" << std::endl;
+			color_bc.row(i) << 1, 0, 0;
+		}
+	}
+
+}
+
+bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
+	// cast a ray from the query point, count how many edges it crosses
+	// if cross is odd-----inside
+	// if cross is even----outside
+	int crossing = 0;
+	double slope;
+	bool cond1, cond2, above;
+
+	for (int i = 0; i < poly.rows(); i++) {
+		if (i == poly.rows() - 1) {
+			// if poly(i) is the last vertex, connect it with the first vertex (x0,y0)
+			slope = (poly(0, 1) - poly(i, 1)) / (poly(0, 0) - poly(i, 0));
+			cond1 = (poly(i, 0) < x_bc) && (poly(0, 0) > x_bc);
+			cond2 = (poly(0, 0) < x_bc) && (poly(i, 0) > x_bc);
+		}
+		else {
+			slope = (poly(i + 1, 1) - poly(i, 1)) / (poly(i + 1, 0) - poly(i, 0));
+			cond1 = (poly(i, 0) < x_bc) && (poly(i + 1, 0) > x_bc);
+			cond2 = (poly(i + 1, 0) < x_bc) && (poly(i, 0) > x_bc);
+		}
+
+		above = (y_bc < slope*(x_bc - poly(i, 0)) + poly(i, 1));
+		if ((cond1 || cond2) && above) {
+			crossing += 1;
+		}
+	}
+	return (crossing % 2 != 0);
 }
 
 void project_hole_vertex_back() {
