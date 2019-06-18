@@ -35,7 +35,7 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	[Return value] vertex on the xy plane
 */
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc);
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f);
 /*
 	Constrained Delauney Triangulation on the xy plane 
 	[Return value] triangulated vertex and face

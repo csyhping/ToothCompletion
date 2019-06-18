@@ -62,10 +62,11 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 }
 
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc) {
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f) {
 
 	Eigen::MatrixXd vertex_xy_coordinates;
 	Eigen::MatrixXd t_vertex_on_xy;
+	Eigen::MatrixXd bc;
 
 	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
 	t_vertex_on_xy = vertex_on_xy.transpose();
@@ -106,20 +107,43 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 
 	// check if the bc is in the polygon(2D) formed by V
 	Eigen::MatrixXd poly_v_2d;
+	Eigen::RowVectorXi pos_valid_F; // mark which F is valid
+	Eigen::MatrixXi valid_cdt_F; // remove those faces which barycenter is out of the poly area
+	int valid_f_count = 0; // how many valid faces
 	poly_v_2d.resize(vertex_xy_coordinates.rows(), 2); // 2D poly
 	poly_v_2d.col(0) = vertex_xy_coordinates.col(0);
 	poly_v_2d.col(1) = vertex_xy_coordinates.col(1);
 
-	color_bc.resize(bc.rows(), 3);
-	color_bc.setConstant(1);
+	//color_bc.resize(bc.rows(), 3);
+	//color_bc.setConstant(1);
+
+	pos_valid_F.resize(cdt_f.rows());
+	pos_valid_F.setZero(); // initialize as 0, if 1 means valid face
 
 	for (int i = 0; i < bc.rows(); i++) {
 		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))) {
-			// if the bc is inside the Poly
+			// if the bc is inside the Poly, keep the face
 			std::cout << "#bc " << i << " is inside" << std::endl;
-			color_bc.row(i) << 1, 0, 0;
+			valid_f_count += 1;
+			pos_valid_F(0, i) = 1;
+			// visualize the valid barycenter
+			// color_bc.row(i) << 1, 0, 0;
 		}
 	}
+
+	// resize according to the valid face count
+	valid_cdt_F.resize(valid_f_count, 3);
+
+	int j = 0; // mark the pos in valid_cdt_f
+	// extract valid face
+	for (int i = 0; i < cdt_f.rows(); i++) {
+		if (pos_valid_F(0, i) == 1) {
+			valid_cdt_F.row(j) = cdt_f.row(i);
+			j += 1;
+		}
+	}
+	cdt_f.resize(valid_f_count, 3);
+	cdt_f = valid_cdt_F;
 
 }
 

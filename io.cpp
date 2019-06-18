@@ -12,7 +12,7 @@ Eigen::MatrixXi CDT_F; // the faces after CDT on the xy plane
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
 
 // test, to be deleted
-Eigen::MatrixXd color_bc;
+// Eigen::MatrixXd color_bc;
 int select_count_L = 0; 
 int select_count_R = 0;
 int count_L = 0;
@@ -148,8 +148,7 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		rotate_to_xy_plane(NL, Projected_vertex_L, Vertex_on_xy_L);
 
 		// Constrained Delaunay Triangulation
-		Eigen::MatrixXd bc;
-		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F,bc);
+		constrained_delauney_triangulation(Vertex_on_xy_R,CDT_F);
 
 
 		// visualize the delaunay result
@@ -182,7 +181,7 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 
 		// visualize barycenter
-		viewer.data().add_points(bc, color_bc);
+		// viewer.data().add_points(bc, color_bc);
 
 
 		// visualize the fitted plane 
