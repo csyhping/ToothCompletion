@@ -13,6 +13,7 @@
 #include <igl/barycenter.h>
 #include <igl/point_in_poly.h>
 #include <igl/false_barycentric_subdivision.h>
+#include <igl/edge_lengths.h>
 
 
 
@@ -129,11 +130,14 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	extract valid delaunay faces
 	[Return value] valid delaunay faces
 */
-void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f);
+
+void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f, double &epsilon);
 /*
-	perform refinment on basic Delaunay result 
+	perform refinment on basic Delaunay result following the constraint that any subtriangle's area <= ¦Å
+	¦Å=(¡Ì3/4)*avg_len^2
 	[Return Value] the final delaunay faces which follow specific constraints
 */
+
 void project_hole_vertex_back();
 
 #endif // !PLANE_H

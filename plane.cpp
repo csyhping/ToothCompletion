@@ -101,10 +101,23 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 
 	// refinement for the basic delaunay result
 	// calculate the average edge length of the poly boundary
-	double avg_edge_len;
+	double convex_length = 0;
 	for (int i = 0; i < vertex_xy_coordinates.rows(); i++) {
-		// TODO
+		if (i == vertex_xy_coordinates.rows() - 1) {
+			// the last edge is v_last & v0
+			convex_length += (vertex_xy_coordinates.row(i) - vertex_xy_coordinates.row(0)).norm();
+		}
+		else {
+			convex_length += (vertex_xy_coordinates.row(i) - vertex_xy_coordinates.row(i + 1)).norm();
+		}
 	}
+	convex_length = convex_length / (double)vertex_xy_coordinates.rows();
+	std::cout << "avg convex len = " << convex_length << std::endl;
+	double epsilon = (sqrt(3)/4)*convex_length*convex_length; // ¦Å=(¡Ì3/4)*avg_len^2
+	std::cout << "epsilon = " << epsilon << std::endl;
+
+	// perform Constrained Delaunay Refinement, the constraint is that any subtriangle's area <= ¦Å
+	refinement_on_basic_delaunay(cdt_f, epsilon);
 }
 
 bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
@@ -186,7 +199,7 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	cdt_f = valid_cdt_F;
 }
 
-void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f) {
+void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f, double &epsilon) {
 
 }
 void project_hole_vertex_back() {
