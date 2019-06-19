@@ -106,6 +106,9 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	// extract valid delaunay result 
 	extract_valid_cdt_f(cdt_f, bc, vertex_xy_coordinates,vertex_xy_coordinates,dblA);
 
+	// update the dblA for extracted valid faces
+	igl::doublearea(vertex_xy_coordinates, cdt_f, dblA);
+
 	// refinement for the basic delaunay result
 	// calculate the average edge length of the poly boundary
 	double convex_length = 0;
@@ -124,7 +127,20 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	std::cout << "epsilon = " << epsilon << std::endl;
 
 	// perform Constrained Delaunay Refinement, the constraint is that any subtriangle's area <= ¦Å
-
+	Eigen::MatrixXd v_of_subtriangle(3, 3); // the three v of the triangle
+	Eigen::MatrixXd vertex_new; // store newly added vertex, it will finally append to the vertex_xy_coordinates
+	int num_new_v = 0; // count how many new v are created
+	for (int i = 0; i < cdt_f.rows(); i++) {
+		if (dblA(i, 0) > epsilon*2) {
+			// the subtriangle is large than ¦Å, needs to be subdivided
+			std::cout << "#triangle " << i << " is large. " << std::endl;
+			v_of_subtriangle.row(0) = vertex_xy_coordinates.row(cdt_f(i, 0));
+			v_of_subtriangle.row(1) = vertex_xy_coordinates.row(cdt_f(i, 1));
+			v_of_subtriangle.row(2) = vertex_xy_coordinates.row(cdt_f(i, 2));
+			refinement_on_basic_delaunay(v_of_subtriangle, epsilon, vertex_new, num_new_v);
+		}
+	}
+	std::cout << "append bc " << vertex_new << std::endl;
 
 
 }
@@ -161,8 +177,6 @@ bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
 void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull,Eigen::MatrixXd &vertex_all, Eigen::MatrixXd &dblA) {
 	
 	//calculate the barycenter of each face
-	bc.resize(cdt_f.rows(), 3);
-
 	igl::barycenter(vertex_all, cdt_f, bc);
 
 	// check if the bc is in the polygon(2D) formed by V, if the bc is outside it means the corresponding face should be deleted
@@ -208,7 +222,48 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	cdt_f = valid_cdt_F;
 }
 
-void refinement_on_basic_delaunay(Eigen::RowVector3d &vertex_of_triangle,Eigen::MatrixXi &triangle, double &epsilon) {
+void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &epsilon, Eigen::MatrixXd &vertex_append, int &num_v) {
+	// add a new vertex at the barycenter of the triangle
+	num_v += 1;
+	Eigen::MatrixXd sub_bc;
+	Eigen::MatrixXd check_new_subtriangle_v(4, 3);
+	Eigen::MatrixXi check_new_subtriangle_f(3, 3);
+	igl::barycenter(vertex_of_triangle, Eigen::RowVector3i(0, 1, 2), sub_bc);
+	// add the barycenter as a new point
+	vertex_append.conservativeResize(num_v, 3);
+	vertex_append.row(num_v - 1) = sub_bc;
+
+	// check the new created 3 triangles
+	check_new_subtriangle_v.row(0) = vertex_of_triangle.row(0);
+	check_new_subtriangle_v.row(1) = vertex_of_triangle.row(1);
+	check_new_subtriangle_v.row(2) = vertex_of_triangle.row(2);
+	check_new_subtriangle_v.row(3) = sub_bc;
+	check_new_subtriangle_f <<
+		3, 0, 1,
+		3, 1, 2,
+		3, 2, 0;
+
+	std::cout << "vertex of tri " << vertex_of_triangle << std::endl;
+	std::cout << "bc " << sub_bc << std::endl;
+	std::cout << "append new vertex [ " << vertex_append.row(num_v - 1) << " ]" << std::endl;
+	std::cout << "check new subtri v " << check_new_subtriangle_v << std::endl;
+	std::cout << "current append vertex matrix " << vertex_append << std::endl;
+
+	// check the area of the three 
+	Eigen::MatrixXd sub_dblA; // store the area of each sub triangle
+	Eigen::MatrixXd temp_v(3, 3); // make a proper parameter for refinment_on_basic_delaunay()
+	igl::doublearea(check_new_subtriangle_v, check_new_subtriangle_f, sub_dblA);
+	std::cout << "sub dblA " << sub_dblA << std::endl;
+	for (int i = 0; i < 3; i++) {
+		if (sub_dblA(i, 0) > epsilon * 2) {
+			std::cout << "need further process" << std::endl;
+			temp_v.row(0) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 0));
+			temp_v.row(1) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 1));
+			temp_v.row(2) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 2));
+			refinement_on_basic_delaunay(temp_v, epsilon, vertex_append, num_v);
+		}
+	}
+	getchar();
 
 }
 void project_hole_vertex_back() {

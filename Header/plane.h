@@ -132,7 +132,7 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	[Return value] valid delaunay faces
 */
 
-void refinement_on_basic_delaunay(Eigen::RowVector3d &vertex_of_triangle, Eigen::MatrixXi &triangle, double &epsilon);
+void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &epsilon, Eigen::MatrixXd &vertex_append, int &num_v);
 /*
 	perform refinment on basic Delaunay result following the constraint that any subtriangle's area <= ¦Å
 	¦Å=(¡Ì3/4)*avg_len^2
