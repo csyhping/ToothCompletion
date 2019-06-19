@@ -14,6 +14,7 @@
 #include <igl/point_in_poly.h>
 #include <igl/false_barycentric_subdivision.h>
 #include <igl/edge_lengths.h>
+#include <igl/doublearea.h>
 
 
 
@@ -125,13 +126,13 @@ bool is_point_in_poly(Eigen::MatrixXd &poly,double &x_bc, double &y_bc);
 	[Return Value] True---inside, false---outside
 */
 
-void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull, Eigen::MatrixXd &vertex_all);
+void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull, Eigen::MatrixXd &vertex_all, Eigen::MatrixXd &dblA);
 /*
 	extract valid delaunay faces
 	[Return value] valid delaunay faces
 */
 
-void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f, double &epsilon);
+void refinement_on_basic_delaunay(Eigen::RowVector3d &vertex_of_triangle, Eigen::MatrixXi &triangle, double &epsilon);
 /*
 	perform refinment on basic Delaunay result following the constraint that any subtriangle's area <= ¦Å
 	¦Å=(¡Ì3/4)*avg_len^2

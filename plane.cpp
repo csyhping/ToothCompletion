@@ -2,6 +2,7 @@
 // test, to be deleted
 #include "Header/io.h"
 
+#define ACCURACY 0.000001
 Eigen::MatrixXd vertex_xy_coordinates;
 Eigen::MatrixXd t_vertex_on_xy;
 //Eigen::MatrixXd bc;
@@ -96,8 +97,14 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	vertex_xy_coordinates.conservativeResize(t_vertex_on_xy.rows(), 3);
 	vertex_xy_coordinates.col(2) = t_vertex_on_xy.col(2);
 	
+	
+	Eigen::MatrixXd dblA; // all subtriangle's [doublearea], the subtriangle's area is 1/2 of each element
+
+	// calculate each triangle's area, send dblA is to avoid thin triangle
+	igl::doublearea(vertex_xy_coordinates, cdt_f, dblA); 
+
 	// extract valid delaunay result 
-	extract_valid_cdt_f(cdt_f, bc, vertex_xy_coordinates,vertex_xy_coordinates);
+	extract_valid_cdt_f(cdt_f, bc, vertex_xy_coordinates,vertex_xy_coordinates,dblA);
 
 	// refinement for the basic delaunay result
 	// calculate the average edge length of the poly boundary
@@ -117,7 +124,9 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	std::cout << "epsilon = " << epsilon << std::endl;
 
 	// perform Constrained Delaunay Refinement, the constraint is that any subtriangle's area <= ¦Å
-	refinement_on_basic_delaunay(cdt_f, epsilon);
+
+
+
 }
 
 bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
@@ -149,7 +158,7 @@ bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
 	return (crossing % 2 != 0);
 }
 
-void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull,Eigen::MatrixXd &vertex_all) {
+void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &vertex_convex_hull,Eigen::MatrixXd &vertex_all, Eigen::MatrixXd &dblA) {
 	
 	//calculate the barycenter of each face
 	bc.resize(cdt_f.rows(), 3);
@@ -172,8 +181,8 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	pos_valid_F.setZero(); // initialize as 0, if 1 means valid face
 
 	for (int i = 0; i < bc.rows(); i++) {
-		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))) {
-			// if the bc is inside the Poly, keep the face
+		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))&&((dblA(i, 0)*0.5) > ACCURACY)) {
+			// if the bc is inside the Poly and not a 'thin triangle', keep the face
 			std::cout << "#bc " << i << " is inside" << std::endl;
 			valid_f_count += 1;
 			pos_valid_F(0, i) = 1;
@@ -199,7 +208,7 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	cdt_f = valid_cdt_F;
 }
 
-void refinement_on_basic_delaunay(Eigen::MatrixXi &cdt_f, double &epsilon) {
+void refinement_on_basic_delaunay(Eigen::RowVector3d &vertex_of_triangle,Eigen::MatrixXi &triangle, double &epsilon) {
 
 }
 void project_hole_vertex_back() {
