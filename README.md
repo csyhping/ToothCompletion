@@ -8,7 +8,7 @@
 √ Fit a plane for hole vertices  
 √ Project the hole vertices to the plane  
 √ Rotate the plane to a (x, y) plane  
-? 2D Delauney(triangulation & refinement)  
+√ 2D Delauney(triangulation & refinement)  
 ? Project back to 3D  
 ? Fairing  
 ? Detect intersection  

@@ -66,7 +66,7 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 }
 
 
-void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc) {
+void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &cdt_v, Eigen::MatrixXd &vertex_new) {
 
 	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
 	t_vertex_on_xy = vertex_on_xy.transpose();
@@ -128,21 +128,32 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 
 	// perform Constrained Delaunay Refinement, the constraint is that any subtriangle's area <= ¦Å
 	Eigen::MatrixXd v_of_subtriangle(3, 3); // the three v of the triangle
-	Eigen::MatrixXd vertex_new; // store newly added vertex, it will finally append to the vertex_xy_coordinates
+	//Eigen::MatrixXd vertex_new; // store newly added vertex, it will finally append to the vertex_xy_coordinates
 	int num_new_v = 0; // count how many new v are created
 	for (int i = 0; i < cdt_f.rows(); i++) {
 		if (dblA(i, 0) > epsilon*2) {
 			// the subtriangle is large than ¦Å, needs to be subdivided
-			std::cout << "#triangle " << i << " is large. " << std::endl;
+			//std::cout << "#triangle " << i << " is large. " << std::endl;
 			v_of_subtriangle.row(0) = vertex_xy_coordinates.row(cdt_f(i, 0));
 			v_of_subtriangle.row(1) = vertex_xy_coordinates.row(cdt_f(i, 1));
 			v_of_subtriangle.row(2) = vertex_xy_coordinates.row(cdt_f(i, 2));
 			refinement_on_basic_delaunay(v_of_subtriangle, epsilon, vertex_new, num_new_v);
 		}
 	}
-	std::cout << "append bc " << vertex_new << std::endl;
 
+	cdt_v.resize(vertex_xy_coordinates.rows() + vertex_new.rows(), 2);
+	cdt_v <<
+		vertex_xy_coordinates.col(0), vertex_xy_coordinates.col(1),
+		vertex_new.col(0), vertex_new.col(1);
 
+	// perform another delaunay triangulation
+	igl::delaunay_triangulation(cdt_v, orient2d_functor, incircle_functor, cdt_f);
+	cdt_v.conservativeResize(cdt_v.rows(), 3);
+	cdt_v.col(2).setConstant(vertex_new(0, 2));
+
+	// extract valid faces
+	igl::doublearea(cdt_v, cdt_f, dblA);
+	extract_valid_cdt_f(cdt_f, bc, vertex_xy_coordinates, cdt_v, dblA);
 }
 
 bool is_point_in_poly(Eigen::MatrixXd &poly, double &x_bc,double &y_bc) {
@@ -243,28 +254,26 @@ void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &e
 		3, 1, 2,
 		3, 2, 0;
 
-	std::cout << "vertex of tri " << vertex_of_triangle << std::endl;
-	std::cout << "bc " << sub_bc << std::endl;
-	std::cout << "append new vertex [ " << vertex_append.row(num_v - 1) << " ]" << std::endl;
-	std::cout << "check new subtri v " << check_new_subtriangle_v << std::endl;
-	std::cout << "current append vertex matrix " << vertex_append << std::endl;
+	//std::cout << "vertex of tri " << vertex_of_triangle << std::endl;
+	//std::cout << "bc " << sub_bc << std::endl;
+	//std::cout << "append new vertex [ " << vertex_append.row(num_v - 1) << " ]" << std::endl;
+	//std::cout << "check new subtri v " << check_new_subtriangle_v << std::endl;
+	//std::cout << "current append vertex matrix " << vertex_append << std::endl;
 
 	// check the area of the three 
 	Eigen::MatrixXd sub_dblA; // store the area of each sub triangle
 	Eigen::MatrixXd temp_v(3, 3); // make a proper parameter for refinment_on_basic_delaunay()
 	igl::doublearea(check_new_subtriangle_v, check_new_subtriangle_f, sub_dblA);
-	std::cout << "sub dblA " << sub_dblA << std::endl;
+	//std::cout << "sub dblA " << sub_dblA << std::endl;
 	for (int i = 0; i < 3; i++) {
 		if (sub_dblA(i, 0) > epsilon * 2) {
-			std::cout << "need further process" << std::endl;
+			//std::cout << "need further process" << std::endl;
 			temp_v.row(0) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 0));
 			temp_v.row(1) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 1));
 			temp_v.row(2) = check_new_subtriangle_v.row(check_new_subtriangle_f(i, 2));
 			refinement_on_basic_delaunay(temp_v, epsilon, vertex_append, num_v);
 		}
 	}
-	getchar();
-
 }
 void project_hole_vertex_back() {
 

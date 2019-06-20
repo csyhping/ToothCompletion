@@ -25,6 +25,7 @@ extern Eigen::MatrixXd color_bc;
 extern Eigen::MatrixXd VD;
 extern Eigen::MatrixXi FD;
 
+
 extern int count_L, count_R; // how many new vertex to create on line
 extern int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 
