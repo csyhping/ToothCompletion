@@ -3,7 +3,7 @@
 	Created by Yuhan Ping from HKU on 2019-06-13.
 	This is the header file for fitting plane and project the hole vertex from 3D to 2D.
 	Under development.
-	Latest updated on 2019-06-17.
+	Latest updated on 2019-06-20.
 */
 #ifndef PLANE_H
 #define PLANE_H

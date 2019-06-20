@@ -65,7 +65,6 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	// which means the rotated vertices are on a plane parallel with xy plane
 }
 
-
 void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::MatrixXd &cdt_v, Eigen::MatrixXd &vertex_new) {
 
 	// transpose teh vertex_on_xy to get (x, y, z) format and resize based on the rows and 2
@@ -275,6 +274,7 @@ void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &e
 		}
 	}
 }
+
 void project_hole_vertex_back() {
 
 }

@@ -2,11 +2,11 @@
 #include "Header/boundary_construction.h"
 #include "Header/plane.h"
 
-Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4;
-Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L;
+Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4; // select two vertex to create interactive straight line, v1&v2 for right hole, v3&v4 for left hole
+Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L; // new_v_on_line: create new v on the straight line
 Eigen::MatrixXd Projected_vertex_R, Projected_vertex_L; // projected vertex on 2D plane, #row = hole_vertex, #col = 2 (x,y)
 Eigen::MatrixXd Vertex_on_xy_R, Vertex_on_xy_L; // rotated vertex on the xy plane
-Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L;// hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
+Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L; // hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
 Eigen::MatrixXd Vertex_CDT_R, Vertex_CDT_L; // the final CDT vertex [2D]
 Eigen::MatrixXd Vertex_new_R, Vertex_new_L;
 Eigen::MatrixXi CDT_F_R, CDT_F_L; // the final CDT face [2D]
@@ -14,17 +14,14 @@ Eigen::MatrixXi CDT_F_R, CDT_F_L; // the final CDT face [2D]
 Eigen::MatrixXi F1;
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
 
-// test, to be deleted
-Eigen::MatrixXd color_bc;
-Eigen::MatrixXd VD;
-Eigen::MatrixXi FD;
-
 int select_count_L = 0; 
 int select_count_R = 0;
-int count_L = 0;
+int count_L = 0; // how many new vertex to create on line
 int count_R = 0;
-int idx_v1, idx_v2, idx_v3, idx_v4;
+int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 
+// test, to be deleted
+Eigen::MatrixXd color_bc;
 
 
 
