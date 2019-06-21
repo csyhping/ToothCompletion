@@ -275,6 +275,97 @@ void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &e
 	}
 }
 
-void project_hole_vertex_back() {
+void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_face, Eigen::MatrixXd &v_original_boundary, Eigen::MatrixXd &vertex_new, Eigen::MatrixXd &vertex_new_3D) {
+	// calculate the adjacent list of each vertex
+	std::vector< std::vector<double> > adj; // store the adjacent info, adj[i][] means the adjacent vertex of v(i)
+	igl::adjacency_list(cdt_face,adj,true); 
 
+	// Mean value Coordinates
+	Eigen::RowVectorXd wi, ni, tan_half_value, internal_edge_len;
+	double a, b, c, sum_wi;
+	int num_v_orignial_boundary = v_original_boundary.cols();
+	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
+		// v before num_v_o_b is on original mesh boundary, use there 3D coordinates directly 
+		sum_wi = 0;
+		wi.resize(adj[i].size());
+		ni.resize(adj[i].size());
+		tan_half_value.resize(wi.cols());
+		internal_edge_len.resize(wi.cols());
+
+
+		for (int j = 0; j < adj[i].size(); j++) {
+			// for each adjacent v, tan a/2 is v_o---v0---v1
+			if (j == adj[i].size() - 1) {
+				// for the last adjacent v, edge a is vj---v0
+				a = sqrt((cdt_vertex(adj[i][j], 0) - cdt_vertex(adj[i][0], 0))*(cdt_vertex(adj[i][j], 0) - cdt_vertex(adj[i][0], 0)) +
+					(cdt_vertex(adj[i][j], 1) - cdt_vertex(adj[i][0], 1))*(cdt_vertex(adj[i][j], 1) - cdt_vertex(adj[i][0], 1)));
+			}
+			else {
+				a = sqrt((cdt_vertex(adj[i][j], 0) - cdt_vertex(adj[i][j + 1], 0))*(cdt_vertex(adj[i][j], 0) - cdt_vertex(adj[i][j + 1], 0)) +
+					(cdt_vertex(adj[i][j], 1) - cdt_vertex(adj[i][j + 1], 1))*(cdt_vertex(adj[i][j], 1) - cdt_vertex(adj[i][j + 1], 1)));
+
+			}
+
+			if (j == 0) {
+				// for the first adjacent v, the edge c needs to be calc
+				c = sqrt((cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0)) +
+					(cdt_vertex(adj[i][j], 1) - cdt_vertex(i, 1))*(cdt_vertex(adj[i][j], 1) - cdt_vertex(i, 1)));
+
+				internal_edge_len(0, j) = c;
+
+			}
+			else {
+				// for other adjacent v, edge c has already been calculated in last loop
+				c = internal_edge_len(0, j - 1);
+			}
+			if (j == adj[i].size() - 1) {
+				// for the last adjacent v, the edge b has been calculated in the first loop
+				b = internal_edge_len(0, 0);
+			}
+			else {
+				b = sqrt((cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0))*(cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0)) +
+					(cdt_vertex(i, 1) - cdt_vertex(adj[i][j + 1], 1))*(cdt_vertex(i, 1) - cdt_vertex(adj[i][j + 1], 1)));
+
+				internal_edge_len(0, j + 1) = b;
+			}
+			// calc tan a/2
+			tan_half_value(0, j) = tan_half_angle(a, b, c);
+
+			// as for tan(a-1)/2, only need to calc for the first adjacent v
+			if(j==0){
+				// for the first adjacent v, tan (a-1)/2 is v_o---v_max---v0
+				a = sqrt((cdt_vertex(adj[i][0], 0) - cdt_vertex(adj[i][adj[i].size() - 1], 0))*(cdt_vertex(adj[i][0], 0) - cdt_vertex(adj[i][adj[i].size() - 1], 0)) +
+					(cdt_vertex(adj[i][0], 1) - cdt_vertex(adj[i][adj[i].size() - 1], 1))*(cdt_vertex(adj[i][0], 1) - cdt_vertex(adj[i][adj[i].size() - 1], 1)));
+				c = sqrt((cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0)) +
+					(cdt_vertex(adj[i][adj[i].size() - 1], 1) - cdt_vertex(i, 1))*(cdt_vertex(adj[i][adj[i].size() - 1], 1) - cdt_vertex(i, 1)));
+				b = internal_edge_len(0, j);
+
+				internal_edge_len(0, adj[i].size() - 1) = c;
+				tan_half_value(0, adj[i].size() - 1) = tan_half_angle(a, b, c);
+				// calc wi, wi = (tan(a-1)/2+tana/2)/(||vi-vo||)
+				wi(0, j) = (tan_half_value(0, adj[i].size() - 1) + tan_half_value(0, j)) / internal_edge_len(0, j);
+				sum_wi += wi(0, j);
+			}
+			else {
+				// for other adjacent v, tan(a-1)/2 has already been calculated in previous loop when calc tan a/2
+				// calc wi, wi = (tan(a-1)/2+tana/2)/(||vi-vo||)
+				wi(0, j) = (tan_half_value(0, j - 1) + tan_half_value(0, j)) / internal_edge_len(0, j);
+				sum_wi += wi(0, j);
+			}
+		}
+
+		// [TODO] calculate ni
+		for (int i = 0; i < wi.cols(); i++) {
+			
+			ni(0, i) = wi(0, i) / sum_wi;
+		}
+
+		// [TODO] v0 = sum of ni * vi
+	}
+}
+
+double tan_half_angle(double &len_a, double &len_b, double &len_c) {
+	double tan_half;
+	tan_half = sqrt(((len_a - len_b + len_c)*(len_a + len_b - len_c)) / ((len_a + len_b + len_c)*(-len_a + len_b + len_c)));
+	return tan_half;
 }

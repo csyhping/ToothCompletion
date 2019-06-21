@@ -3,10 +3,12 @@
 	Created by Yuhan Ping from HKU on 2019-06-13.
 	This is the header file for fitting plane and project the hole vertex from 3D to 2D.
 	Under development.
-	Latest updated on 2019-06-20.
+	Latest updated on 2019-06-21.
 */
 #ifndef PLANE_H
 #define PLANE_H
+
+#include <vector>
 #include <igl/fit_plane.h>
 #include <igl/rotation_matrix_from_directions.h>
 #include <igl/delaunay_triangulation.h>
@@ -15,6 +17,8 @@
 #include <igl/false_barycentric_subdivision.h>
 #include <igl/edge_lengths.h>
 #include <igl/doublearea.h>
+#include <igl/adjacency_list.h>
+
 
 
 
@@ -139,7 +143,18 @@ void refinement_on_basic_delaunay(Eigen::MatrixXd &vertex_of_triangle, double &e
 	[Return Value] the final delaunay faces which follow specific constraints
 */
 
-void project_hole_vertex_back();
+void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_face, Eigen::MatrixXd &v_original_boundary, Eigen::MatrixXd &vertex_new_2D, Eigen::MatrixXd &vertex_new_3D);
+/*
+	use 'mean value coordinates' to project the CDT vertices back to 3D coordinates
+	[Return value] 3D coordinates (x,y,z) of the CDT result vertices
+*/
+
+double tan_half_angle(double &len_a, double &len_b, double &len_c);
+/*
+	calculate the tangent of half of angle BAC, len_a/b/c is the length of the edge of the triangle
+	[Return value] tan a/2
+*/
+
 
 #endif // !PLANE_H
 

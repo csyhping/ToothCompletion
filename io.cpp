@@ -7,9 +7,10 @@ Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L; // new_v_on_line
 Eigen::MatrixXd Projected_vertex_R, Projected_vertex_L; // projected vertex on 2D plane, #row = hole_vertex, #col = 2 (x,y)
 Eigen::MatrixXd Vertex_on_xy_R, Vertex_on_xy_L; // rotated vertex on the xy plane
 Eigen::MatrixXd Hole_vertex_R, Hole_vertex_L; // hole_boundary vertices, including select_v1 + select_v2 + new_v_on_line + orginal_boundary_v_above_v1&v2
-Eigen::MatrixXd Vertex_CDT_R, Vertex_CDT_L; // the final CDT vertex [2D]
+Eigen::MatrixXd CDT_V_R, CDT_V_L; // the final CDT vertex [2D]
 Eigen::MatrixXd Vertex_new_R, Vertex_new_L;
 Eigen::MatrixXi CDT_F_R, CDT_F_L; // the final CDT face [2D]
+Eigen::MatrixXd Vertex_new_R_3D, Vertex_new_L_3D; // the final CDT vertex [3D]
 
 Eigen::MatrixXi F1;
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
@@ -152,18 +153,21 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 		// Constrained Delaunay Triangulation
 		Eigen::MatrixXd bc;
-		constrained_delauney_triangulation(Vertex_on_xy_R, CDT_F_R, bc, Vertex_CDT_R, Vertex_new_R);
-		constrained_delauney_triangulation(Vertex_on_xy_L, CDT_F_L, bc, Vertex_CDT_L, Vertex_new_L);
+		constrained_delauney_triangulation(Vertex_on_xy_R, CDT_F_R, bc, CDT_V_R, Vertex_new_R);
+		constrained_delauney_triangulation(Vertex_on_xy_L, CDT_F_L, bc, CDT_V_L, Vertex_new_L);
+
+		// project the 2D CDT back to 3D
+		project_hole_vertex_back(CDT_V_R, CDT_F_R, Vertex_on_xy_R, Vertex_new_R, Vertex_new_R_3D);
 
 
 		// visualize the delaunay result
 		viewer.data().clear();
-		viewer.data().set_mesh(Vertex_CDT_L, CDT_F_L);
+		viewer.data().set_mesh(CDT_V_R, CDT_F_R);
 		//viewer.data().set_mesh(VD, FD);
-		viewer.core.align_camera_center(Vertex_CDT_L);
+		viewer.core.align_camera_center(CDT_V_R);
 		
 		// visualize the refined vertex
-		viewer.data().add_points(Vertex_new_L, Eigen::RowVector3d(217, 77, 255));
+		viewer.data().add_points(Vertex_new_R, Eigen::RowVector3d(217, 77, 255));
 
 		// visualize the projected vertex
 		viewer.data().add_points(Projected_vertex_R, Eigen::RowVector3d(255, 255, 0));
