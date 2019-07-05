@@ -207,23 +207,23 @@ void extract_valid_cdt_f(Eigen::MatrixXi &cdt_f, Eigen::MatrixXd &bc, Eigen::Mat
 	for (int i = 0; i < bc.rows(); i++) {
 		if (is_point_in_poly(poly_v_2d, bc(i, 0), bc(i, 1))&&((dblA(i, 0)*0.5) > ACCURACY)) {
 			// if the bc is inside the Poly and not a 'thin triangle', keep the face
-			std::cout << "#bc " << i << " is inside" << std::endl;
+			//std::cout << "#bc " << i << " is inside" << std::endl;
 			valid_f_count += 1;
 			pos_valid_F(0, i) = 1;
 			// visualize the valid barycenter
 			color_bc.row(i) << 1, 0, 0;
 		}
 	}
-	std::cout << "valid pos " << pos_valid_F << std::endl;
+	//std::cout << "valid pos " << pos_valid_F << std::endl;
 	// resize according to the valid face count
 	valid_cdt_F.resize(valid_f_count, 3);
-	std::cout << "#valid faces " << valid_f_count << std::endl;
+	//std::cout << "#valid faces " << valid_f_count << std::endl;
 
 	int j = 0; // mark the pos in valid_cdt_f
 	// extract valid face
 	for (int i = 0; i < cdt_f.rows(); i++) {
 		if (pos_valid_F(0, i) == 1) {
-			std::cout << "keep #f " << i << std::endl;
+			//std::cout << "keep #f " << i << std::endl;
 			valid_cdt_F.row(j) = cdt_f.row(i);
 			j += 1;
 		}
@@ -281,9 +281,28 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 	igl::adjacency_list(cdt_face,adj,true); 
 
 	// Mean value Coordinates
-	Eigen::RowVectorXd wi, ni, tan_half_value, internal_edge_len;
+	Eigen::RowVectorXd wi, ni, tan_half_value, internal_edge_len; // wi/ni: for each planar distribution
+	Eigen::MatrixXd ni_total; // reconstructed matrix of all ni for computing
+	ni_total.resize(vertex_new.rows(), cdt_vertex.rows());
+	ni_total.setZero();
+	std::cout << "#cdt_v: " << cdt_vertex.rows() << std::endl;
+	std::cout << "#vertex_new: " << vertex_new.rows() << std::endl;
+	std::cout << "#ni_total rows cols: " << ni_total.rows() << " " << ni_total.cols() << std::endl;
+
+	for (int i = 0; i < adj.size(); i++) {
+		for (int j = 0; j < adj[i].size(); j++) {
+			std::cout << adj[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+
+	int count_ni_total = 0; // control which row of ni_total to construct
+	int count_ni; // control which col of ni to construct
+
+
 	double a, b, c, sum_wi;
 	int num_v_orignial_boundary = v_original_boundary.cols();
+	std::cout << "i = " << num_v_orignial_boundary << std::endl;
 	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
 		// v before num_v_o_b is on original mesh boundary, use there 3D coordinates directly 
 		sum_wi = 0;
@@ -294,6 +313,10 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 
 
 		for (int j = 0; j < adj[i].size(); j++) {
+			// mark the position of adjacent vertex
+
+			ni_total(count_ni_total, adj[i][j]) = 1;
+
 			// for each adjacent v, tan a/2 is v_o---v0---v1
 			if (j == adj[i].size() - 1) {
 				// for the last adjacent v, edge a is vj---v0
@@ -354,14 +377,29 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 			}
 		}
 
+
+
 		// [TODO] calculate ni
 		for (int i = 0; i < wi.cols(); i++) {
 			
 			ni(0, i) = wi(0, i) / sum_wi;
 		}
+		std::cout << "current ni: " << ni << std::endl;
+		// construct the ni_total
+		for (int k = 0; k < ni.cols(); k++) {
+			// update actual ni value for marked position
+			ni_total(count_ni_total, adj[i][k]) = ni(0, k);
+		}
+		std::cout << "ni_total elements: " << std::endl;
+		std::cout << ni_total.row(count_ni_total) << std::endl;
+		count_ni_total += 1;
 
+		getchar();
 		// [TODO] v0 = sum of ni * vi
 	}
+
+
+
 }
 
 double tan_half_angle(double &len_a, double &len_b, double &len_c) {
