@@ -407,7 +407,6 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 
 	vertex_new_3D = A.colPivHouseholderQr().solve(B);
 
-
 }
 
 double tan_half_angle(double &len_a, double &len_b, double &len_c) {
@@ -415,3 +414,8 @@ double tan_half_angle(double &len_a, double &len_b, double &len_c) {
 	tan_half = sqrt(((len_a - len_b + len_c)*(len_a + len_b - len_c)) / ((len_a + len_b + len_c)*(-len_a + len_b + len_c)));
 	return tan_half;
 }
+
+void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_new_3D_R, Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_new_3D_L, Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L) {
+
+}
+

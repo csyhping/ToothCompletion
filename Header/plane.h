@@ -158,6 +158,11 @@ double tan_half_angle(double &len_a, double &len_b, double &len_c);
 	[Return value] tan a/2
 */
 
+void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_new_3D_R, Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_new_3D_L, Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L);
+/*
+	seam the patched hole area with original mesh
+	[Return value] hole filled mesh
+*/
 
 #endif // !PLANE_H
 

@@ -1,7 +1,7 @@
 #include "Header/boundary_construction.h"
 
 Eigen::MatrixXd Color_per_vertex;
-Eigen::RowVectorXd Boundary_loop;
+Eigen::RowVectorXi Boundary_loop;
 Eigen::RowVectorXi Pos_boundary;
 double avg_length; // store the average edge length
 
@@ -56,11 +56,11 @@ void get_pos_boundary(Eigen::MatrixXi &F) {
 	std::cout << "pos boundary size " << Pos_boundary.rows() << " " << Pos_boundary.cols() << std::endl;
 	for (int i = 0; i < Boundary_loop.cols(); i++) {
 		Pos_boundary(0, Boundary_loop(0, i)) = i;
-		std::cout << "v_" << Boundary_loop(0, i) << " at " << Pos_boundary(0, Boundary_loop(0, i)) << std::endl;
+		//std::cout << "v_" << Boundary_loop(0, i) << " at " << Pos_boundary(0, Boundary_loop(0, i)) << std::endl;
 	}
 }
 
-void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3d &select_v1, Eigen::RowVector3d &select_v2, Eigen::MatrixXd &New_v_on_line, int &idx_v1, int &idx_v2, int &count, Eigen::MatrixXd &Hole_vertex) {
+void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &New_v_on_line, int &idx_v1, int &idx_v2, int &count, Eigen::MatrixXd &Hole_vertex, Eigen::RowVectorXi &Hole_vertex_idx) {
 	
 	// construct new hole boundary 
 	if (Pos_boundary(0, idx_v1) < Pos_boundary(0, idx_v2)) {
@@ -70,7 +70,7 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 		std::cout << "[INFO] Construct for right side " << std::endl;
 		std::cout << "size boundary R " << size_boundary_R << std::endl;
 		Hole_vertex.resize(size_boundary_R, 3);
-		std::cout << "hole boundary v rows cols " << Hole_vertex.rows() << " " << Hole_vertex.cols() << std::endl;
+		Hole_vertex_idx.resize(Pos_boundary(0, idx_v2) - Pos_boundary(0, idx_v1) + 1);
 
 		int pos_boundary_loop_count = 0; // counter in boundary_loop
 		int pos_new_v_on_line_count = 0; // counter in new_v_on_line
@@ -86,6 +86,7 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 			{
 				// original boundary vertices
 				Hole_vertex.row(i) = V.row(Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_boundary_loop_count));
+				Hole_vertex_idx(0,i) = Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_boundary_loop_count);
 				Color_per_vertex.row(Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_boundary_loop_count)) << 1, 0, 0;
 				pos_boundary_loop_count += 1;
 			}
@@ -100,7 +101,9 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 		std::cout << "[INFO] Construct for left side " << std::endl;
 		std::cout << "size boundary L " << size_boundary_L << std::endl;
 		Hole_vertex.resize(size_boundary_L, 3);
-		std::cout << "hole boundary v rows cols " << Hole_vertex.rows() << " " << Hole_vertex.cols() << std::endl;
+		//std::cout << "hole boundary v rows cols " << Hole_vertex.rows() << " " << Hole_vertex.cols() << std::endl;
+		Hole_vertex_idx.resize(Boundary_loop.cols() - (Pos_boundary(0, idx_v1) - Pos_boundary(0, idx_v2) + 1) + 2);
+		//std::cout << "LLLLL rows cols " << Hole_vertex_idx.rows() << " " << Hole_vertex_idx.cols() << std::endl;
 
 		int pos_boundary_loop_count = 0; // counter in boundary_loop from start point to s_v4
 		int pos_new_v_on_line_count = 0; // counter in new_v_on_line
@@ -110,6 +113,7 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 			if (i<=Pos_boundary(idx_v2)) {
 				// from start point to select_v4
 				Hole_vertex.row(i) = V.row(Boundary_loop(0, 0 + pos_boundary_loop_count));
+				Hole_vertex_idx(0, i) = Boundary_loop(0, 0 + pos_boundary_loop_count);
 				Color_per_vertex.row(Boundary_loop(0, 0 + pos_boundary_loop_count)) << 1, 0, 0;
 				pos_boundary_loop_count += 1;
 			}
@@ -121,6 +125,7 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 			else {
 				// from select_v3 to start point
 				Hole_vertex.row(i) = V.row(Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_v3_to_end));
+				Hole_vertex_idx(0, i) = Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_v3_to_end);
 				Color_per_vertex.row(Boundary_loop(0, Pos_boundary(0, idx_v1) + pos_v3_to_end)) << 1, 0, 0;
 				pos_v3_to_end += 1;
 			}
@@ -128,6 +133,8 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVector3
 		}
 
 	}
+
+	std::cout << "hole vertex idx " << Hole_vertex_idx << std::endl;
 
 }
 
