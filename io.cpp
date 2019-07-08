@@ -157,14 +157,14 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		constrained_delauney_triangulation(Vertex_on_xy_L, CDT_F_L, bc, CDT_V_L, Vertex_new_L);
 
 		// project the 2D CDT back to 3D
-		project_hole_vertex_back(CDT_V_R, CDT_F_R, Vertex_on_xy_R, Vertex_new_R, Vertex_new_R_3D);
+		project_hole_vertex_back(CDT_V_R, CDT_F_R, Hole_vertex_R, Vertex_new_R, Vertex_new_R_3D);
 
-
-		// visualize the delaunay result
-		viewer.data().clear();
-		viewer.data().set_mesh(CDT_V_R, CDT_F_R);
-		//viewer.data().set_mesh(VD, FD);
-		viewer.core.align_camera_center(CDT_V_R);
+		viewer.data().add_points(Vertex_new_R_3D, Eigen::RowVector3d(217, 77, 255));
+		//// visualize the delaunay result
+		//viewer.data().clear();
+		//viewer.data().set_mesh(CDT_V_R, CDT_F_R);
+		////viewer.data().set_mesh(VD, FD);
+		//viewer.core.align_camera_center(CDT_V_R);
 		
 		// visualize the refined vertex
 		viewer.data().add_points(Vertex_new_R, Eigen::RowVector3d(217, 77, 255));

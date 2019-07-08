@@ -287,21 +287,19 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 	ni_total.setZero();
 
 
-
-
 	int count_ni_total = 0; // control which row of ni_total to construct
 	int count_ni; // control which col of ni to construct
 
 
 	double a, b, c, sum_wi;
-	int num_v_orignial_boundary = v_original_boundary.cols();
+	int num_v_orignial_boundary = v_original_boundary.rows();
 
-	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
-		for (int j = 0; j < adj[i].size(); j++) {
-			std::cout << adj[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
+	//for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
+	//	for (int j = 0; j < adj[i].size(); j++) {
+	//		std::cout << adj[i][j] << " ";
+	//	}
+	//	std::cout << std::endl;
+	//}
 
 
 	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
@@ -395,6 +393,20 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 	}
 
 	// [TODO]solve the equaltion to get 3D vertices coordinates
+	// construct Ax = b
+	Eigen::MatrixXd A,B, B_left,A_left, A_right;
+
+	B_left = ni_total.leftCols(num_v_orignial_boundary);
+	B = B_left * v_original_boundary;
+
+	A_left.resize(count_ni_total, count_ni_total);
+	A_left.setIdentity();
+	A_right = ni_total.rightCols(count_ni_total);
+	A = A_left - A_right;
+
+
+	vertex_new_3D = A.colPivHouseholderQr().solve(B);
+
 
 }
 
