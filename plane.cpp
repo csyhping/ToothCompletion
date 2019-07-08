@@ -314,9 +314,6 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 
 
 		for (int j = 0; j < adj[i].size(); j++) {
-			// mark the position of adjacent vertex
-
-			ni_total(count_ni_total, adj[i][j]) = 1;
 
 			// for each adjacent v, tan a/2 is v_o---v0---v1
 			if (j == adj[i].size() - 1) {
@@ -379,28 +376,25 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 			}
 		}
 
-		std::cout << "current wi: " << wi << std::endl;
+		//std::cout << "current wi: " << wi << std::endl;
 
 		// [TODO] calculate ni
 		for (int i = 0; i < wi.cols(); i++) {
 			
 			ni(0, i) = wi(0, i) / sum_wi;
 		}
-		std::cout << "current ni: " << ni << std::endl;
+		//std::cout << "current ni: " << ni << std::endl;
+		
 		// construct the ni_total
-		//for (int k = 0; k < ni.cols(); k++) {
-		//	// update actual ni value for marked position
-		//	ni_total(count_ni_total, adj[i][k]) = ni(0, k);
-		//}
+		for (int k = 0; k < ni.cols(); k++) {
+			// update actual ni value for marked position
+			ni_total(count_ni_total, adj[i][k]) = ni(0, k);
+		}
 
 		count_ni_total += 1;
-
-		// [TODO] v0 = sum of ni * vi
 	}
-	//std::cout << "count_ni_total = " << count_ni_total << std::endl;
-	//std::cout << "ni_total: " << std::endl;
-	//std::cout << ni_total << std::endl;
 
+	// [TODO]solve the equaltion to get 3D vertices coordinates
 
 }
 
