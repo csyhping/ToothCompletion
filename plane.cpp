@@ -285,16 +285,9 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 	Eigen::MatrixXd ni_total; // reconstructed matrix of all ni for computing
 	ni_total.resize(vertex_new.rows(), cdt_vertex.rows());
 	ni_total.setZero();
-	std::cout << "#cdt_v: " << cdt_vertex.rows() << std::endl;
-	std::cout << "#vertex_new: " << vertex_new.rows() << std::endl;
-	std::cout << "#ni_total rows cols: " << ni_total.rows() << " " << ni_total.cols() << std::endl;
 
-	for (int i = 0; i < adj.size(); i++) {
-		for (int j = 0; j < adj[i].size(); j++) {
-			std::cout << adj[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
+
+
 
 	int count_ni_total = 0; // control which row of ni_total to construct
 	int count_ni; // control which col of ni to construct
@@ -302,7 +295,15 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 
 	double a, b, c, sum_wi;
 	int num_v_orignial_boundary = v_original_boundary.cols();
-	std::cout << "i = " << num_v_orignial_boundary << std::endl;
+
+	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
+		for (int j = 0; j < adj[i].size(); j++) {
+			std::cout << adj[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+
+
 	for (int i = num_v_orignial_boundary; i < adj.size(); i++) {
 		// v before num_v_o_b is on original mesh boundary, use there 3D coordinates directly 
 		sum_wi = 0;
@@ -330,26 +331,27 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 			}
 
 			if (j == 0) {
-				// for the first adjacent v, the edge c needs to be calc
-				c = sqrt((cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0)) +
+				// for the first adjacent v, the edge b needs to be calc
+				b = sqrt((cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][j], 0) - cdt_vertex(i, 0)) +
 					(cdt_vertex(adj[i][j], 1) - cdt_vertex(i, 1))*(cdt_vertex(adj[i][j], 1) - cdt_vertex(i, 1)));
 
-				internal_edge_len(0, j) = c;
+				internal_edge_len(0, j) = b;
 
 			}
 			else {
-				// for other adjacent v, edge c has already been calculated in last loop
-				c = internal_edge_len(0, j - 1);
+				// for other adjacent v, edge b has already been calculated in last loop
+				b = internal_edge_len(0, j);
 			}
+
 			if (j == adj[i].size() - 1) {
-				// for the last adjacent v, the edge b has been calculated in the first loop
-				b = internal_edge_len(0, 0);
+				// for the last adjacent v, the edge c has been calculated in the first loop
+				c = internal_edge_len(0, 0);
 			}
 			else {
-				b = sqrt((cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0))*(cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0)) +
+				c = sqrt((cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0))*(cdt_vertex(i, 0) - cdt_vertex(adj[i][j + 1], 0)) +
 					(cdt_vertex(i, 1) - cdt_vertex(adj[i][j + 1], 1))*(cdt_vertex(i, 1) - cdt_vertex(adj[i][j + 1], 1)));
 
-				internal_edge_len(0, j + 1) = b;
+				internal_edge_len(0, j + 1) = c;
 			}
 			// calc tan a/2
 			tan_half_value(0, j) = tan_half_angle(a, b, c);
@@ -359,11 +361,11 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 				// for the first adjacent v, tan (a-1)/2 is v_o---v_max---v0
 				a = sqrt((cdt_vertex(adj[i][0], 0) - cdt_vertex(adj[i][adj[i].size() - 1], 0))*(cdt_vertex(adj[i][0], 0) - cdt_vertex(adj[i][adj[i].size() - 1], 0)) +
 					(cdt_vertex(adj[i][0], 1) - cdt_vertex(adj[i][adj[i].size() - 1], 1))*(cdt_vertex(adj[i][0], 1) - cdt_vertex(adj[i][adj[i].size() - 1], 1)));
-				c = sqrt((cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0)) +
+				b = sqrt((cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0))*(cdt_vertex(adj[i][adj[i].size() - 1], 0) - cdt_vertex(i, 0)) +
 					(cdt_vertex(adj[i][adj[i].size() - 1], 1) - cdt_vertex(i, 1))*(cdt_vertex(adj[i][adj[i].size() - 1], 1) - cdt_vertex(i, 1)));
-				b = internal_edge_len(0, j);
+				c = internal_edge_len(0, j);
 
-				internal_edge_len(0, adj[i].size() - 1) = c;
+				internal_edge_len(0, adj[i].size() - 1) = b;
 				tan_half_value(0, adj[i].size() - 1) = tan_half_angle(a, b, c);
 				// calc wi, wi = (tan(a-1)/2+tana/2)/(||vi-vo||)
 				wi(0, j) = (tan_half_value(0, adj[i].size() - 1) + tan_half_value(0, j)) / internal_edge_len(0, j);
@@ -377,7 +379,7 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 			}
 		}
 
-
+		std::cout << "current wi: " << wi << std::endl;
 
 		// [TODO] calculate ni
 		for (int i = 0; i < wi.cols(); i++) {
@@ -386,18 +388,18 @@ void project_hole_vertex_back(Eigen::MatrixXd &cdt_vertex, Eigen::MatrixXi &cdt_
 		}
 		std::cout << "current ni: " << ni << std::endl;
 		// construct the ni_total
-		for (int k = 0; k < ni.cols(); k++) {
-			// update actual ni value for marked position
-			ni_total(count_ni_total, adj[i][k]) = ni(0, k);
-		}
-		std::cout << "ni_total elements: " << std::endl;
-		std::cout << ni_total.row(count_ni_total) << std::endl;
+		//for (int k = 0; k < ni.cols(); k++) {
+		//	// update actual ni value for marked position
+		//	ni_total(count_ni_total, adj[i][k]) = ni(0, k);
+		//}
+
 		count_ni_total += 1;
 
-		getchar();
 		// [TODO] v0 = sum of ni * vi
 	}
-
+	//std::cout << "count_ni_total = " << count_ni_total << std::endl;
+	//std::cout << "ni_total: " << std::endl;
+	//std::cout << ni_total << std::endl;
 
 
 }
