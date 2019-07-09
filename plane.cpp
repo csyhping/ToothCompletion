@@ -415,7 +415,82 @@ double tan_half_angle(double &len_a, double &len_b, double &len_c) {
 	return tan_half;
 }
 
-void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_new_3D_R, Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_new_3D_L, Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L) {
+void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_line_R, Eigen::MatrixXd &v_new_3D_R,
+	Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_on_line_L, Eigen::MatrixXd &v_new_3D_L,
+	Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L) {
+
+	Eigen::MatrixXd V_total;
+	Eigen::MatrixXi F_total;
+	Eigen::VectorXi tmp;
+	int numv_ol_R = v_on_line_R.rows();
+	int numv_ol_L = v_on_line_L.rows();
+	int numv_R = v_new_3D_R.rows();
+	int numv_L = v_new_3D_L.rows();
+	int numv_O = V.rows();
+	int numf_R = cdt_face_R.rows();
+	int numf_L = cdt_face_L.rows();
+	int numf_O = F.rows();
+
+
+	// combine all vertices, V + v_on_line_right + v_on_line_left + new_v_right + new_v_left
+	// combine all faces, F + new_f_right + new_f_left
+	V_total.resize(numv_O + numv_ol_R + numv_R + numv_ol_L + numv_L, 3);
+	F_total.resize(numf_O + numf_R + numf_L, 3);
+
+	V_total <<
+		V,
+		v_on_line_R,
+		v_new_3D_R,
+		v_on_line_L,
+		v_new_3D_L;
+	
+	// make orientation of cdt face same as original mesh
+	// [NOTE] may not be robust, current test the cdt_face orientation is opposite, will it possible to be same as original mesh?
+	// In order to be robust, should use igl::bfs_orient, but currently is to save time
+	tmp = cdt_face_R.col(0);
+	cdt_face_R.col(0) = cdt_face_R.col(2);
+	cdt_face_R.col(2) = tmp;
+	tmp = cdt_face_L.col(0);
+	cdt_face_L.col(0) = cdt_face_L.col(2);
+	cdt_face_L.col(2) = tmp;
+
+	// adjust the idx of cdt faces(vertex's idx)
+	for (int i = 0; i < numf_R; i++) {
+		for (int j = 0; j < 3;j++) {
+			if (cdt_face_R(i, j) < hole_idx_R.cols()) {
+				// if #cdt_f idx < # hole, it means the cdt_f vertex is boundary vertex
+				cdt_face_R(i, j) = hole_idx_R(0, cdt_face_R(i, j));
+			}
+			else {
+				// if #cdt_f idx >= # hole, it means the cdt_f vertex is either v_online or new_v
+				cdt_face_R(i, j) = cdt_face_R(i, j) - hole_idx_R.cols() + numv_O;
+			}
+		}
+	}
+
+	for (int i = 0; i < numf_L; i++) {
+		for (int j = 0; j < cdt_face_L.cols(); j++) {
+			if (cdt_face_L(i, j) < hole_idx_L.cols()) {
+				// if #cdt_f idx < # hole, it means the cdt_f vertex is boundary vertex
+				cdt_face_L(i, j) = hole_idx_L(0, cdt_face_L(i, j));
+			}
+			else {
+				cdt_face_L(i, j) = cdt_face_L(i, j) - hole_idx_L.cols() + numv_O + numv_ol_R + numv_R;
+			}
+		}
+	}
+
+	F_total <<
+		F,
+		cdt_face_R,
+		cdt_face_L;
+
+
+	V.resize(numv_O + numv_ol_R + numv_R + numv_ol_L + numv_L, 3);
+	F.resize(numf_O + numf_R + numf_L, 3);
+	V = V_total;
+	F = F_total;
+
 
 }
 

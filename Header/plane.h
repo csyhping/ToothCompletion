@@ -18,6 +18,7 @@
 #include <igl/edge_lengths.h>
 #include <igl/doublearea.h>
 #include <igl/adjacency_list.h>
+#include <igl/bfs_orient.h>
 
 
 #include <iostream>
@@ -158,7 +159,9 @@ double tan_half_angle(double &len_a, double &len_b, double &len_c);
 	[Return value] tan a/2
 */
 
-void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_new_3D_R, Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_new_3D_L, Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L);
+void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_line_R, Eigen::MatrixXd &v_new_3D_R, 
+	Eigen::MatrixXi &cdt_face_R, Eigen::RowVectorXi &hole_idx_R, Eigen::MatrixXd &v_on_line_L, Eigen::MatrixXd &v_new_3D_L, 
+	Eigen::MatrixXi &cdt_face_L, Eigen::RowVectorXi &hole_idx_L);
 /*
 	seam the patched hole area with original mesh
 	[Return value] hole filled mesh

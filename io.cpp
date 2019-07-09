@@ -162,15 +162,15 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		project_hole_vertex_back(CDT_V_L, CDT_F_L, Hole_vertex_L, Vertex_new_L, Vertex_new_L_3D);
 
 		// seam the patched areas
-		seampatch(V1, F1, Vertex_new_R_3D, CDT_F_R, Hole_idx_R, Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
+		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
 
 		// visualization of projected 3D vertices
 		//viewer.data().add_points(Vertex_new_R_3D, Eigen::RowVector3d(217, 77, 255));
 		//viewer.data().add_points(Vertex_new_L_3D, Eigen::RowVector3d(217, 77, 255));
 
 		//// visualize the delaunay result
-		//viewer.data().clear();
-		//viewer.data().set_mesh(CDT_V_L, CDT_F_L);
+		viewer.data().clear();
+		viewer.data().set_mesh(V1,F1);
 		////viewer.data().set_mesh(VD, FD);
 		//viewer.core.align_camera_center(CDT_V_L);
 		
@@ -277,6 +277,7 @@ bool viewer_display(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 bool load_mesh(std::string &mesh_dir, Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
 	igl::readOFF(mesh_dir, V, F);
 	std::cout << "Load mesh successfully----[" << mesh_dir << "]" << std::endl;
+	std::cout << "mesh V = " << V.rows() << " mesh F = " << F.rows() << std::endl;
 	get_pos_boundary(F);
 	return true;
 }
