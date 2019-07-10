@@ -21,10 +21,6 @@
 #include <igl/bfs_orient.h>
 
 
-#include <iostream>
-#include <fstream>
-
-
 
 
 

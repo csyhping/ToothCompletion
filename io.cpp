@@ -1,6 +1,7 @@
 #include "Header/io.h"
 #include "Header/boundary_construction.h"
 #include "Header/plane.h"
+#include "Header/fairing.h"
 
 Eigen::RowVector3d select_v1, select_v2, select_v3, select_v4; // select two vertex to create interactive straight line, v1&v2 for right hole, v3&v4 for left hole
 Eigen::MatrixXd V1, New_vertex_on_line_R, New_vertex_on_line_L; // new_v_on_line: create new v on the straight line
@@ -163,6 +164,14 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 		// seam the patched areas
 		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
+
+		// mesh fairing
+		Eigen::MatrixXd onering;
+		mesh_fairing(F1, onering);
+
+
+
+
 
 		// visualization of projected 3D vertices
 		//viewer.data().add_points(Vertex_new_R_3D, Eigen::RowVector3d(217, 77, 255));
