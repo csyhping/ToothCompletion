@@ -22,7 +22,7 @@ int select_count_R = 0;
 int count_L = 0; // how many new vertex to create on line
 int count_R = 0;
 int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
-
+int num_original, num_new; // count of original and patched mesh vertex
 // test, to be deleted
 Eigen::MatrixXd color_bc;
 
@@ -162,12 +162,15 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		project_hole_vertex_back(CDT_V_R, CDT_F_R, Hole_vertex_R, Vertex_new_R, Vertex_new_R_3D);
 		project_hole_vertex_back(CDT_V_L, CDT_F_L, Hole_vertex_L, Vertex_new_L, Vertex_new_L_3D);
 
+		num_original = V1.rows();
+
 		// seam the patched areas
 		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
 
+		
 		// mesh fairing
 		Eigen::MatrixXd onering;
-		mesh_fairing(F1, onering);
+		mesh_fairing(V1, F1, onering, Hole_idx_R, Hole_idx_L, num_original);
 
 
 
