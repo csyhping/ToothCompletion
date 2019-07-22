@@ -18,6 +18,7 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &one_r
 	Eigen::MatrixXd wi; // weight matrix
 	Eigen::MatrixXd len; // length of edge, scale-based wi = ||vi - vj||
 	int num_total = 0; // hole + one-ring + new_Vertex
+	Eigen::RowVectorXd sum_wi; // sum of wi
 
 	Eigen::RowVectorXi pos; // the match between original idx and constructed idx
 	pos.resize(V.rows());
@@ -36,6 +37,9 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &one_r
 	wi.resize(V.rows() - num_new, num_total);
 	wi.setZero();
 	len.resize(num_total, num_total); // len(i, j) = len||vi - vj||
+	len.setZero();
+	sum_wi.resize(num_total);
+	sum_wi.setZero();
 
 	// match between original idx and constructed idx
 	int position = 0;
@@ -45,31 +49,24 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &one_r
 			position += 1;
 		}
 	}
-	std::cout << "pos " << pos << std::endl;
-	std::cout << "v rows cols " << V.rows() << " " << V.cols() << std::endl;
+
 	// calculate w(vi, vj)
 	for (int i = 0; i < adjlist.size(); i++) {
-		if (posmark(i) == 1) {
-			// only focus on 1-ring, boundary and new vertex
-			std::cout << "#idx = " << i << "at " << pos(i) << std::endl;
-
+		if (posmark(i) == 1 || posmark(i)==3) {
+			// only focus on boundary and new vertex, one-ring vertex is only for calc wi of boundary vertex
 			for (int j = 0; j < adjlist[i].size(); j++) {
-				std::cout << "adj[][] = " << adjlist[i][j] << std::endl;
-				std::cout << "pos(i) " << pos(i) << std::endl;
-				std::cout << "pos(adj) " << pos(adjlist[i][j]) << std::endl;
-				std::cout << "v (i,0) " << V(i, 0) << std::endl;
-				std::cout << "v(adj) " << V(adjlist[i][j], 0) << std::endl;
-				len(pos(i), pos(adjlist[i][j])) = sqrt(
-					(V(i, 0) - V(adjlist[i][j], 0))*(V(i, 0) - V(adjlist[i][j], 0)) +
-					(V(i, 1) - V(adjlist[i][j], 1))*(V(i, 1) - V(adjlist[i][j], 1)) +
-					(V(i, 2) - V(adjlist[i][j], 2))*(V(i, 2) - V(adjlist[i][j], 2))
-				);
-				len(pos(adjlist[i][j]), pos(i)) = len(pos(i), pos(adjlist[i][j]));
+				if (len(pos(i), pos(adjlist[i][j])) == 0) {
+					len(pos(i), pos(adjlist[i][j])) = sqrt(
+						(V(i, 0) - V(adjlist[i][j], 0))*(V(i, 0) - V(adjlist[i][j], 0)) +
+						(V(i, 1) - V(adjlist[i][j], 1))*(V(i, 1) - V(adjlist[i][j], 1)) +
+						(V(i, 2) - V(adjlist[i][j], 2))*(V(i, 2) - V(adjlist[i][j], 2))
+					);
+					len(pos(adjlist[i][j]), pos(i)) = len(pos(i), pos(adjlist[i][j]));
+				}
+				sum_wi(pos(i)) += len(pos(i), pos(adjlist[i][j]));
 			}
 		}
-		//getchar();
 	}
-
 
 }
 
