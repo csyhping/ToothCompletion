@@ -169,8 +169,7 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 		
 		// mesh fairing
-		Eigen::MatrixXd onering;
-		mesh_fairing(V1, F1, onering, Hole_idx_R, Hole_idx_L, num_original);
+		mesh_fairing(V1, F1, Hole_idx_R, Hole_idx_L, num_original);
 
 
 
