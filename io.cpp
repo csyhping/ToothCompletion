@@ -167,10 +167,10 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		// seam the patched areas
 		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
 
-		
+		igl::writeOFF("unfair.off", V1, F1);
 		// mesh fairing
 		mesh_fairing(V1, F1, Hole_idx_R, Hole_idx_L, num_original);
-
+		igl::writeOFF("fair.off", V1, F1);
 
 
 

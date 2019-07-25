@@ -14,6 +14,7 @@
 #include <igl/opengl/glfw/imgui/ImGuiHelpers.h>
 #include <igl/opengl/glfw/imgui/ImGuiMenu.h>
 #include <igl/unproject_onto_mesh.h>
+#include <igl/writeOFF.h>
 
 
 extern Eigen::MatrixXd V1; 
