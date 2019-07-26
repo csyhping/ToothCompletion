@@ -3,7 +3,7 @@
 	Created by Yuhan Ping from HKU on 2019-06-06.
 	This is the header file for boundary construction.
 	Under development.
-	Latest updated on 2019-07-08.
+	Latest updated on 2019-07-26.
 */
 #ifndef BOUNDARY_CONSTRUCTION_H
 #define BOUNDARY_CONSTRUCTION_H
@@ -30,7 +30,7 @@ void create_vertex_on_line(Eigen::RowVector3d &select_v1, Eigen::RowVector3d &se
 	[Return value] new vertices coordinates stored in a matrix
 */
 
-void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &New_v_on_line, int &idx_v1, int &idx_v2, int &count, Eigen::MatrixXd &Hole_vertex, Eigen::RowVectorXi &Hole_vertex_idx);
+void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXd &New_v_on_line, int &idx_v1, int &idx_v2, int &count, Eigen::MatrixXd &Hole_vertex, Eigen::RowVectorXi &Hole_vertex_idx);
 /*
 	hole_boundary = select_v1 + select_v2 + new_created_v_on_straight_line + boundary_v_above_v1_and_v2
 	[Return value] constructed hole boundary vertices of right side

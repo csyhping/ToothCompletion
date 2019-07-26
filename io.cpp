@@ -128,18 +128,24 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		viewer.data().add_edges(select_v1, select_v2, Eigen::RowVector3d(0, 0, 255)); // between right two selected_v
 		viewer.data().add_edges(select_v3, select_v4, Eigen::RowVector3d(0, 0, 255)); // between left two selected_v
 
-		
+
 		// get new vertex coordinates
 		create_vertex_on_line(select_v1, select_v2, New_vertex_on_line_R, count_R); // for right edge
 		create_vertex_on_line(select_v3, select_v4, New_vertex_on_line_L, count_L); // for left edge
 
 		// visualize new vertex on line
-		viewer.data().add_points(New_vertex_on_line_R, Eigen::RowVector3d(0, 255, 255)); // for right edge
-		viewer.data().add_points(New_vertex_on_line_L, Eigen::RowVector3d(0, 255, 255)); // for left edge
+		//viewer.data().add_points(New_vertex_on_line_R, Eigen::RowVector3d(0, 255, 255)); // for right edge
+		//viewer.data().add_points(New_vertex_on_line_L, Eigen::RowVector3d(0, 255, 255)); // for left edge
+
 
 		// get new hole boundary
-		get_hole_boundary(V1, F1, New_vertex_on_line_R, idx_v1, idx_v2, count_R, Hole_vertex_R, Hole_idx_R); // for right hole
-		get_hole_boundary(V1, F1, New_vertex_on_line_L, idx_v3, idx_v4, count_L, Hole_vertex_L, Hole_idx_L); // for right hole
+		get_hole_boundary(V1, New_vertex_on_line_R, idx_v1, idx_v2, count_R, Hole_vertex_R, Hole_idx_R); // for right hole
+		get_hole_boundary(V1, New_vertex_on_line_L, idx_v3, idx_v4, count_L, Hole_vertex_L, Hole_idx_L); // for right hole
+
+		viewer.data().add_points(Hole_vertex_R, Eigen::RowVector3d(0, 255, 255));
+		viewer.data().add_points(Hole_vertex_L, Eigen::RowVector3d(0, 255, 255));
+
+		return true;
 
 		// fit plane
 		get_plane(Hole_vertex_R, NR, CR); // for right side
@@ -167,10 +173,10 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		// seam the patched areas
 		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
 
-		igl::writeOFF("unfair.off", V1, F1);
+		//igl::writeOFF("unfair.off", V1, F1);
 		// mesh fairing
 		mesh_fairing(V1, F1, Hole_idx_R, Hole_idx_L, num_original);
-		igl::writeOFF("fair.off", V1, F1);
+		//igl::writeOFF("fair.off", V1, F1);
 
 
 
