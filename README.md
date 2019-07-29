@@ -10,7 +10,7 @@
 √ Rotate the plane to a (x, y) plane  
 √ 2D Delauney(triangulation & refinement)  
 √ Project back to 3D  
-? Fairing  
+√ Fairing  
 ? Detect intersection  
 ? Adjust the intersection  
 ? Get the final result  

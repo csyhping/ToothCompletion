@@ -3,7 +3,7 @@
 	Created by Yuhan Ping from HKU on 2019-06-04.
 	This is the header file for all io-related functions and the viewer settings.
 	Under development.
-	Latest updated on 2019-06-13.
+	Latest updated on 2019-07-26.
 */
 
 #ifndef IO_H
@@ -19,6 +19,8 @@
 
 extern Eigen::MatrixXd V1; 
 extern Eigen::MatrixXi F1;
+extern int cover_origin;// flag: if the selected two points v3 and v4 cover the origin point of boudnary vertex 
+extern int count_cover_hole_part_left, count_cover_new, count_cover_hole_part_right; // mark the position for adjusting cdt_f coordinates when seampatch
 
 // test for visualization, will be deteled finally
 extern Eigen::MatrixXd color_bc;

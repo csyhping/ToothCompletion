@@ -67,11 +67,13 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVectorXi &ho
 			for (int j = 0; j < adjlist[i].size(); j++) {
 				if (len(pos(i), pos(adjlist[i][j])) == 0) {
 					// if the weight has not been calculated 
-					len(pos(i), pos(adjlist[i][j])) = sqrt(
+					// [NOTE] the scale-dependent laplacian operator should be 1/||vi-vj|| which is wrong in Nan Qiu's paper(in this paper is ||vi - vj||)
+					// in Liepa's paper is 1/||vi - vj||
+					len(pos(i), pos(adjlist[i][j])) = 1/(sqrt(
 						(V(i, 0) - V(adjlist[i][j], 0))*(V(i, 0) - V(adjlist[i][j], 0)) +
 						(V(i, 1) - V(adjlist[i][j], 1))*(V(i, 1) - V(adjlist[i][j], 1)) +
 						(V(i, 2) - V(adjlist[i][j], 2))*(V(i, 2) - V(adjlist[i][j], 2))
-					);
+					));
 					len(pos(adjlist[i][j]), pos(i)) = len(pos(i), pos(adjlist[i][j]));
 				}
 				sum_wi(pos(i)) += len(pos(i), pos(adjlist[i][j]));

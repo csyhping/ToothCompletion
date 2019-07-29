@@ -75,7 +75,7 @@ void constrained_delauney_triangulation(Eigen::MatrixXd &vertex_on_xy, Eigen::Ma
 	vertex_xy_coordinates.col(0) = t_vertex_on_xy.col(0);
 	vertex_xy_coordinates.col(1) = t_vertex_on_xy.col(1);
 
-	std::cout << "v xy coordinate " << vertex_xy_coordinates << std::endl;
+	//std::cout << "v xy coordinate " << vertex_xy_coordinates << std::endl;
 
 	// perform Constrained Delaunay Triangulation
 	// define orient2D and incircle functor for DT
@@ -421,7 +421,7 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 
 	Eigen::MatrixXd V_total;
 	Eigen::MatrixXi F_total;
-	Eigen::VectorXi tmp;
+
 	int numv_ol_R = v_on_line_R.rows();
 	int numv_ol_L = v_on_line_L.rows();
 	int numv_R = v_new_3D_R.rows();
@@ -431,7 +431,10 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 	int numf_L = cdt_face_L.rows();
 	int numf_O = F.rows();
 
+	std::cout << "count covert left = " << count_cover_hole_part_left << std::endl;
+	std::cout << "count covert right = " << count_cover_hole_part_right << std::endl;
 
+	std::cout << "count new = " << count_cover_new << std::endl;
 	// combine all vertices, V + v_on_line_right + v_on_line_left + new_v_right + new_v_left
 	// combine all faces, F + new_f_right + new_f_left
 	V_total.resize(numv_O + numv_ol_R + numv_R + numv_ol_L + numv_L, 3);
@@ -443,16 +446,6 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 		v_new_3D_R,
 		v_on_line_L,
 		v_new_3D_L;
-	
-	// make orientation of cdt face same as original mesh
-	// [NOTE] may not be robust, current test the cdt_face orientation is opposite, will it possible to be same as original mesh?
-	// In order to be robust, should use igl::bfs_orient, but currently is to save time
-	tmp = cdt_face_R.col(0);
-	cdt_face_R.col(0) = cdt_face_R.col(2);
-	cdt_face_R.col(2) = tmp;
-	tmp = cdt_face_L.col(0);
-	cdt_face_L.col(0) = cdt_face_L.col(2);
-	cdt_face_L.col(2) = tmp;
 
 	// adjust the idx of cdt faces(vertex's idx)
 	for (int i = 0; i < numf_R; i++) {
@@ -468,17 +461,49 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 		}
 	}
 
-	for (int i = 0; i < numf_L; i++) {
-		for (int j = 0; j < cdt_face_L.cols(); j++) {
-			if (cdt_face_L(i, j) < hole_idx_L.cols()) {
-				// if #cdt_f idx < # hole, it means the cdt_f vertex is boundary vertex
-				cdt_face_L(i, j) = hole_idx_L(0, cdt_face_L(i, j));
-			}
-			else {
-				cdt_face_L(i, j) = cdt_face_L(i, j) - hole_idx_L.cols() + numv_O + numv_ol_R + numv_R;
+	std::cout << "cdt face l " << cdt_face_L << std::endl;
+	switch (cover_origin)
+	{
+	case 0:
+		// if the idx of selected vertex not cover the origin point
+		for (int i = 0; i < numf_L; i++) {
+			for (int j = 0; j < cdt_face_L.cols(); j++) {
+				if (cdt_face_L(i, j) < hole_idx_L.cols()) {
+					// if #cdt_f idx < # hole, it means the cdt_f vertex is boundary vertex
+					cdt_face_L(i, j) = hole_idx_L(0, cdt_face_L(i, j));
+				}
+				else {
+					cdt_face_L(i, j) = cdt_face_L(i, j) - hole_idx_L.cols() + numv_O + numv_ol_R + numv_R;
+				}
 			}
 		}
+		break;
+	case 1:
+		// if the idx of selected vertex not cover the origin point
+		for (int i = 0; i < numf_L; i++) {
+			for (int j = 0; j < cdt_face_L.cols(); j++) {
+				if (cdt_face_L(i, j) < count_cover_hole_part_left) {
+					// if #cdt_f idx < # hole, it means the cdt_f vertex is boundary vertex
+					cdt_face_L(i, j) = hole_idx_L(0, cdt_face_L(i, j));
+				}
+				else if (cdt_face_L(i, j) >= count_cover_hole_part_left && cdt_face_L(i, j) < (count_cover_hole_part_left + count_cover_new)) {
+					cdt_face_L(i, j) = cdt_face_L(i, j) - count_cover_hole_part_left + numv_O + numv_ol_R + numv_R;
+
+				}
+				else if (cdt_face_L(i, j) >= (count_cover_hole_part_left + count_cover_new) && cdt_face_L(i, j) < (count_cover_hole_part_left + count_cover_new + count_cover_hole_part_right)) {
+					cdt_face_L(i, j) = hole_idx_L(cdt_face_L(i, j) - count_cover_new);
+				}
+				else {
+					cdt_face_L(i, j) = cdt_face_L(i, j) - count_cover_hole_part_left - count_cover_hole_part_right + numv_O + numv_ol_R + numv_R;
+				}
+			}
+		}
+		break;
+	default:
+		break;
 	}
+
+
 
 	F_total <<
 		F,
@@ -486,10 +511,16 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 		cdt_face_L;
 
 
+	// make orientation of cdt face same as original mesh
+	Eigen::MatrixXi F_orient;
+	igl::bfs_orient(F_total, F_orient, V);
+
+
 	V.resize(numv_O + numv_ol_R + numv_R + numv_ol_L + numv_L, 3);
 	F.resize(numf_O + numf_R + numf_L, 3);
 	V = V_total;
-	F = F_total;
+	//F = F_total;
+	F = F_orient;
 
 
 }

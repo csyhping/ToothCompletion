@@ -1,9 +1,11 @@
 #include "Header/boundary_construction.h"
+#include "Header/io.h"
 
 Eigen::MatrixXd Color_per_vertex;
 Eigen::RowVectorXi Boundary_loop;
 Eigen::RowVectorXi Pos_boundary;
 double avg_length; // store the average edge length
+
 
 
 double calc_average_edge_length(Eigen::MatrixXd &V, Eigen::MatrixXi &F) {
@@ -100,7 +102,9 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXd &New_v_on_line, int &
 		// construct hole boundary if idx_v1 and idx_v2 covers the start point of the boundary loop, this only happens for left side
 		int size_boundary_L;
 		size_boundary_L = Boundary_loop.cols() +Pos_boundary(idx_v2)-Pos_boundary(idx_v1) + 1 + count;
-		std::cout << "[INFO] the two selected vertex idx not cover origin idx " << std::endl;
+		std::cout << "[INFO] the two selected vertex idx cover origin idx " << std::endl;
+		cover_origin = 1;
+		count_cover_new = count;
 		std::cout << "size boundary L " << size_boundary_L << std::endl;
 		Hole_vertex.resize(size_boundary_L, 3);
 		std::cout << "hole boundary v rows cols " << Hole_vertex.rows() << " " << Hole_vertex.cols() << std::endl;
@@ -112,12 +116,12 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXd &New_v_on_line, int &
 		int pos_hole_idx = 0;// counter in hole_vertex_idx
 
 		for (int i = 0; i < size_boundary_L; i++) {
-			std::cout << "i = " << i << std::endl;
 			if (i <= Pos_boundary(idx_v2)) {
 				// from start point to select_v4
 				Hole_vertex.row(i) = V.row(Boundary_loop(i));
 				Hole_vertex_idx(i) = Boundary_loop(i);
 				pos_hole_idx += 1;
+				count_cover_hole_part_left += 1;
 				Color_per_vertex.row(Boundary_loop(i)) << 1, 0, 0;
 				//pos_boundary_loop_count += 1;
 			}
@@ -128,16 +132,16 @@ void get_hole_boundary(Eigen::MatrixXd &V, Eigen::MatrixXd &New_v_on_line, int &
 			}
 			else if (i > Pos_boundary(idx_v2) && pos_new_v_on_line_count == count) {
 				// from select_v3 to start point
+				count_cover_hole_part_right += 1;
 				Hole_vertex.row(i) = V.row(Boundary_loop(Pos_boundary(idx_v1) + pos_v3_to_end));
 				Hole_vertex_idx(pos_hole_idx) = Boundary_loop(Pos_boundary(idx_v1) + pos_v3_to_end);
 				Color_per_vertex.row(Boundary_loop(Pos_boundary(idx_v1) + pos_v3_to_end)) << 1, 0, 0;
 				pos_v3_to_end += 1;
 			}
-
 		}
 
 	}
-
+	//std::cout << Hole_vertex << std::endl;
 	std::cout << "hole vertex idx " << Hole_vertex_idx << std::endl;
 
 }
