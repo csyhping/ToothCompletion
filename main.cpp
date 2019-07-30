@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 {
 
 	// load the mesh, currently load one mesh for test, load two mesh in the future for dealing with neighbor intersection
- 	load_mesh(second_mesh, V1, F1);
+ 	load_mesh(first_mesh, V1, F1);
 
 	// identify the boundary
 	calc_average_edge_length(V1, F1);

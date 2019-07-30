@@ -1,4 +1,5 @@
-# This is a project about tooth completion. Currently under development.  
+# This is a project about tooth completion part 1. Currently under development.  
+-----[PART 1]-----  
 √ Load the mesh  
 √ Visualize the mesh  
 √ Identify the boundary  
@@ -11,6 +12,8 @@
 √ 2D Delauney(triangulation & refinement)  
 √ Project back to 3D  
 √ Fairing  
+
+-----[[PART 2](https://github.com/csyhping/ToothCompletion_Part2.git)]-----  
 ? Detect intersection  
 ? Adjust the intersection  
 ? Get the final result  
