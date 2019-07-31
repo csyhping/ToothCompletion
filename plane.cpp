@@ -53,14 +53,14 @@ void rotate_to_xy_plane(Eigen::RowVector3d &N, Eigen::MatrixXd &ProjectTo_vertex
 	// calculate the rotation matrix
 	Rotation_matrix = igl::rotation_matrix_from_directions(n_plane, n_xy);
 
-	std::cout << "project rows cols " << ProjectTo_vertex.rows() << " " << ProjectTo_vertex.cols() << std::endl;
-	std::cout << "v on xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
+	//std::cout << "project rows cols " << ProjectTo_vertex.rows() << " " << ProjectTo_vertex.cols() << std::endl;
+	//std::cout << "v on xy rows cols " << vertex_on_xy.rows() << " " << vertex_on_xy.cols() << std::endl;
 
 	// calculate the rotated vertex coordinate based on the rotation matrix
 	// [NOTE] The matrix multiplication requires the transpose operation, 
 	// so the vertex_on_xy.transpose() is the final result which same format as normal V from a mesh
 	vertex_on_xy = Rotation_matrix * ProjectTo_vertex.transpose();
-	std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl; 
+	//std::cout << "vertex on xy " << vertex_on_xy.transpose() << std::endl; 
 	// [NOTE] due to the calc error, the z value may not be exactlly 0 but z will be a constant 
 	// which means the rotated vertices are on a plane parallel with xy plane
 }
@@ -431,10 +431,7 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 	int numf_L = cdt_face_L.rows();
 	int numf_O = F.rows();
 
-	std::cout << "count covert left = " << count_cover_hole_part_left << std::endl;
-	std::cout << "count covert right = " << count_cover_hole_part_right << std::endl;
 
-	std::cout << "count new = " << count_cover_new << std::endl;
 	// combine all vertices, V + v_on_line_right + v_on_line_left + new_v_right + new_v_left
 	// combine all faces, F + new_f_right + new_f_left
 	V_total.resize(numv_O + numv_ol_R + numv_R + numv_ol_L + numv_L, 3);
@@ -461,7 +458,6 @@ void seampatch(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &v_on_lin
 		}
 	}
 
-	std::cout << "cdt face l " << cdt_face_L << std::endl;
 	switch (cover_origin)
 	{
 	case 0:

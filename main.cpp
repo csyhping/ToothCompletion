@@ -19,18 +19,31 @@ using namespace Eigen;
 using namespace std;
 
 
-// ---------------pre-define parameters------------------
-
-string first_mesh = "F:/StudyMaterials/HKU/RA/libigl-example-project/32.off";
-string second_mesh = "F:/StudyMaterials/HKU/RA/libigl-example-project/33.off";
 
 //--------------------------------------------------------
 
 int main(int argc, char *argv[])
 {
+	if (argc != 2) {
+		cout << "[Usage] ToothCompletion [path]" << endl;
+		exit(-1);
+	}
+
+	// setup path
+	inputmesh = argv[1];
+	int nPos = inputmesh.find(".off");
+	if (nPos != -1) {
+		prefair_R = inputmesh.substr(0, nPos) + "\prefair_R.dmat";
+		prefair_L = inputmesh.substr(0, nPos) + "\prefair_L.dmat";
+		postfair_X = inputmesh.substr(0, nPos) + "\postfair_X.dmat";
+		prefair_file = inputmesh.substr(0, nPos) + "\prefair.off";
+		postfair_file = inputmesh.substr(0, nPos) + "\postfair.off";
+
+	}
+
 
 	// load the mesh, currently load one mesh for test, load two mesh in the future for dealing with neighbor intersection
- 	load_mesh(first_mesh, V1, F1);
+ 	load_mesh(inputmesh, V1, F1);
 
 	// identify the boundary
 	calc_average_edge_length(V1, F1);

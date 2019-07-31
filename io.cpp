@@ -28,6 +28,8 @@ int count_L = 0; // how many new vertex to create on line
 int count_R = 0;
 int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 int num_original, num_new; // count of original and patched mesh vertex
+std::string inputmesh, prefair_R, prefair_L, postfair_X, prefair_file, postfair_file;
+
 // test, to be deleted
 Eigen::MatrixXd color_bc;
 
@@ -172,14 +174,36 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		project_hole_vertex_back(CDT_V_R, CDT_F_R, Hole_vertex_R, Vertex_new_R, Vertex_new_R_3D);
 		project_hole_vertex_back(CDT_V_L, CDT_F_L, Hole_vertex_L, Vertex_new_L, Vertex_new_L_3D);
 
+
 		num_original = V1.rows();
 		// seam the patched areas
 		seampatch(V1, F1, New_vertex_on_line_R,Vertex_new_R_3D, CDT_F_R, Hole_idx_R, New_vertex_on_line_L,Vertex_new_L_3D, CDT_F_L, Hole_idx_L);
 
-		igl::writeOFF("unfair.off", V1, F1);
+		// write the prefair vertex coordinates
+		Eigen::MatrixXd pre_V_R, pre_V_L;
+		std::cout << "right total = " << New_vertex_on_line_R.rows()<<" + "<<Vertex_new_R_3D.rows() << std::endl;
+		std::cout << "left total = " << New_vertex_on_line_L.rows() << " + " << Vertex_new_L_3D.rows() << std::endl;
+
+		pre_V_R.resize(New_vertex_on_line_R.rows() + Vertex_new_R_3D.rows(), 3);
+		pre_V_L.resize(New_vertex_on_line_L.rows() + Vertex_new_L_3D.rows(), 3);
+
+		pre_V_R <<
+			New_vertex_on_line_R,
+			Vertex_new_R_3D;
+		pre_V_L <<
+			New_vertex_on_line_L,
+			Vertex_new_L_3D;
+		igl::writeDMAT(prefair_R, pre_V_R);
+		igl::writeDMAT(prefair_L, pre_V_L);
+
+		// write prefair file
+		igl::writeOFF(prefair_file, V1, F1);
+
 		// mesh fairing
 		mesh_fairing(V1, F1, Hole_idx_R, Hole_idx_L, num_original);
-		igl::writeOFF("fair.off", V1, F1);
+
+		// write postfair file
+		igl::writeOFF(postfair_file, V1, F1);
 
 
 

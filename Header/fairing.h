@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <igl/adjacency_list.h>
-
+#include <igl/writeDMAT.h>
 
 #include <iostream>
 #include <fstream>

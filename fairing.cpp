@@ -176,6 +176,7 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVectorXi &ho
 	//ff4.close();
 
 	X = A.colPivHouseholderQr().solve(B);
+	igl::writeDMAT(postfair_X, X);
 	//std::ofstream ff5;
 	//ff5.open("X.txt");
 	//ff5 << X << std::endl;
@@ -183,7 +184,7 @@ void mesh_fairing(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::RowVectorXi &ho
 	int kk = 0;
 	for (int i = num_new; i < V.rows(); i++) {
 		V.row(i) = X.row(kk);
-		std::cout << X.row(kk) << std::endl;
+		//std::cout << X.row(kk) << std::endl;
 		kk++;
 	}
 
