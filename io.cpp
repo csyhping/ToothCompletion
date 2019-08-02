@@ -13,6 +13,7 @@ Eigen::MatrixXd CDT_V_R, CDT_V_L; // the final CDT vertex [2D]
 Eigen::MatrixXd Vertex_new_R, Vertex_new_L;
 Eigen::MatrixXi CDT_F_R, CDT_F_L; // the final CDT face [2D]
 Eigen::MatrixXd Vertex_new_R_3D, Vertex_new_L_3D; // the final CDT vertex [3D]
+Eigen::MatrixXd Hole_R, Hole_L; // boundary vertex of each side, for final data storage purpose
 
 Eigen::MatrixXi F1;
 Eigen::RowVector3d NR, NL, CR, CL; // NR & NL: the normal of the right & left plane, CR & CL: one point on the right & left plane
@@ -28,7 +29,7 @@ int count_L = 0; // how many new vertex to create on line
 int count_R = 0;
 int idx_v1, idx_v2, idx_v3, idx_v4; // the idx of the four selected vertices
 int num_original, num_new; // count of original and patched mesh vertex
-std::string inputmesh, prefair_R, prefair_L, postfair_X, prefair_file, postfair_file;
+std::string inputmesh, prefair_R, prefair_L, postfair_X, prefair_file, postfair_file, hole_R, hole_L;
 
 // test, to be deleted
 Eigen::MatrixXd color_bc;
@@ -174,6 +175,11 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		project_hole_vertex_back(CDT_V_R, CDT_F_R, Hole_vertex_R, Vertex_new_R, Vertex_new_R_3D);
 		project_hole_vertex_back(CDT_V_L, CDT_F_L, Hole_vertex_L, Vertex_new_L, Vertex_new_L_3D);
 
+		Eigen::MatrixXi ori_cdt_f_r, ori_cdt_f_l;
+		ori_cdt_f_r.resize(CDT_F_R.rows(), 3);
+		ori_cdt_f_r = CDT_F_R;
+		ori_cdt_f_l .resize(CDT_F_L.rows(), 3);
+		ori_cdt_f_l = CDT_F_L;
 
 		num_original = V1.rows();
 		// seam the patched areas
@@ -181,20 +187,37 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 
 		// write the prefair vertex coordinates
 		Eigen::MatrixXd pre_V_R, pre_V_L;
-		std::cout << "right total = " << New_vertex_on_line_R.rows()<<" + "<<Vertex_new_R_3D.rows() << std::endl;
+		std::cout << "right total = " <<Hole_idx_R.cols()<<" + "<< New_vertex_on_line_R.rows()<<" + "<<Vertex_new_R_3D.rows() << std::endl;
 		std::cout << "left total = " << New_vertex_on_line_L.rows() << " + " << Vertex_new_L_3D.rows() << std::endl;
 
-		pre_V_R.resize(New_vertex_on_line_R.rows() + Vertex_new_R_3D.rows(), 3);
-		pre_V_L.resize(New_vertex_on_line_L.rows() + Vertex_new_L_3D.rows(), 3);
+		pre_V_R.resize(Hole_idx_R.cols() + New_vertex_on_line_R.rows() + Vertex_new_R_3D.rows(), 3);
+		pre_V_L.resize(Hole_idx_L.cols() + New_vertex_on_line_L.rows() + Vertex_new_L_3D.rows(), 3);
+		Hole_R.resize(Hole_idx_R.cols(), 3);
+		Hole_L.resize(Hole_idx_L.cols(), 3);
+
+		for (int i = 0; i < Hole_idx_R.cols();i++) {
+			Hole_R.row(i) = V1.row(Hole_idx_R(i));
+		}
+
+		for (int i = 0; i < Hole_idx_L.cols(); i++) {
+			Hole_L.row(i) = V1.row(Hole_idx_L(i));
+		}
 
 		pre_V_R <<
+			Hole_R,
 			New_vertex_on_line_R,
 			Vertex_new_R_3D;
+
 		pre_V_L <<
+			Hole_L,
 			New_vertex_on_line_L,
 			Vertex_new_L_3D;
-		igl::writeDMAT(prefair_R, pre_V_R);
-		igl::writeDMAT(prefair_L, pre_V_L);
+
+		igl::writeOFF(prefair_R, pre_V_R, ori_cdt_f_r);
+		igl::writeOFF(prefair_L, pre_V_L, ori_cdt_f_l);
+		igl::writeDMAT(hole_R, Hole_idx_R);
+		igl::writeDMAT(hole_L, Hole_idx_L);
+
 
 		// write prefair file
 		igl::writeOFF(prefair_file, V1, F1);
@@ -215,8 +238,8 @@ bool key_down(igl::opengl::glfw::Viewer &viewer, unsigned char key, int modifier
 		//// visualize the delaunay result
 		viewer.data().clear();
 		viewer.data().set_mesh(V1,F1);
-		//viewer.data().set_mesh(CDT_V_L, CDT_F_L);
-		//viewer.core.align_camera_center(CDT_V_L);
+		//viewer.data().set_mesh(pre_V_L, ori_cdt_f_l);
+		//viewer.core.align_camera_center(pre_V_L);
 
 		return true;
 		// visualize the refined vertex

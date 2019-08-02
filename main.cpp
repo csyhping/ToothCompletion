@@ -33,8 +33,10 @@ int main(int argc, char *argv[])
 	inputmesh = argv[1];
 	int nPos = inputmesh.find(".off");
 	if (nPos != -1) {
-		prefair_R = inputmesh.substr(0, nPos) + "\prefair_R.dmat";
-		prefair_L = inputmesh.substr(0, nPos) + "\prefair_L.dmat";
+		prefair_R = inputmesh.substr(0, nPos) + "\prefair_R.off";
+		prefair_L = inputmesh.substr(0, nPos) + "\prefair_L.off";
+		hole_R = inputmesh.substr(0, nPos) + "\holeR.dmat";
+		hole_L = inputmesh.substr(0, nPos) + "\holeL.dmat";
 		postfair_X = inputmesh.substr(0, nPos) + "\postfair_X.dmat";
 		prefair_file = inputmesh.substr(0, nPos) + "\prefair.off";
 		postfair_file = inputmesh.substr(0, nPos) + "\postfair.off";

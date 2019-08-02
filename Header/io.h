@@ -26,7 +26,7 @@ extern int count_cover_hole_part_left, count_cover_new, count_cover_hole_part_ri
 
 // test for visualization, will be deteled finally
 extern Eigen::MatrixXd color_bc;
-extern std::string inputmesh, prefair_R, prefair_L, postfair_X, prefair_file, postfair_file;
+extern std::string inputmesh, prefair_R, prefair_L, postfair_X, prefair_file, postfair_file,hole_R,hole_L;
 
 
 bool mouse_down(igl::opengl::glfw::Viewer &viewer, int button, int modifier); // mouse interaction to select vertex,Eigen::Vector3f &v1, Eigen::Vector3f &v2
